@@ -35,11 +35,11 @@ class SubscriptionBuilder
     protected $quantity = 1;
 
     /**
-     * The number of trial days to apply to the subscription.
+     * The date and time the trial will expire.
      *
-     * @var int|null
+     * @var \Carbon\Carbon
      */
-    protected $trialDays;
+    protected $trialExpires;
 
     /**
      * Indicates that the trial should end immediately.
@@ -91,14 +91,27 @@ class SubscriptionBuilder
     }
 
     /**
-     * Specify the ending date of the trial.
+     * Specify the number of days of the trial.
      *
      * @param  int  $trialDays
      * @return $this
      */
     public function trialDays($trialDays)
     {
-        $this->trialDays = $trialDays;
+        $this->trialExpires = Carbon::now()->addDays($trialDays);
+
+        return $this;
+    }
+
+    /**
+     * Specify the ending date of the trial.
+     *
+     * @param  \Carbon\Carbon  $trialUntil
+     * @return $this
+     */
+    public function trialUntil(Carbon $trialUntil)
+    {
+        $this->trialExpires = $trialUntil;
 
         return $this;
     }
@@ -168,7 +181,7 @@ class SubscriptionBuilder
         if ($this->skipTrial) {
             $trialEndsAt = null;
         } else {
-            $trialEndsAt = $this->trialDays ? Carbon::now()->addDays($this->trialDays) : null;
+            $trialEndsAt = $this->trialExpires;
         }
 
         return $this->owner->subscriptions()->create([
@@ -231,8 +244,8 @@ class SubscriptionBuilder
             return 'now';
         }
 
-        if ($this->trialDays) {
-            return Carbon::now()->addDays($this->trialDays)->getTimestamp();
+        if ($this->trialExpires) {
+            return $this->trialExpires->getTimestamp();
         }
     }
 

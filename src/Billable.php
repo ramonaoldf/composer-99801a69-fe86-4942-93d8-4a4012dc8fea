@@ -59,7 +59,7 @@ trait Billable
      *
      * @param  string  $charge
      * @param  array  $options
-     * @return \Stripe\Charge
+     * @return \Stripe\Refund
      *
      * @throws \InvalidArgumentException
      */
@@ -302,12 +302,11 @@ trait Billable
      *
      * @param  string  $id
      * @param  array  $data
-     * @param  string  $storagePath
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function downloadInvoice($id, array $data, $storagePath = null)
+    public function downloadInvoice($id, array $data)
     {
-        return $this->findInvoiceOrFail($id)->download($data, $storagePath);
+        return $this->findInvoiceOrFail($id)->download($data);
     }
 
     /**
@@ -389,8 +388,6 @@ trait Billable
                 return $card;
             }
         }
-
-        return null;
     }
 
     /**

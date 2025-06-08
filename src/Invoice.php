@@ -120,7 +120,7 @@ class Invoice
      */
     public function discount()
     {
-        return $this->formatAmount($this->invoice->subtotal - $this->invoice->total);
+        return $this->formatAmount($this->invoice->subtotal + $this->invoice->tax - $this->invoice->total);
     }
 
     /**
@@ -250,10 +250,6 @@ class Invoice
     {
         if (! defined('DOMPDF_ENABLE_AUTOLOAD')) {
             define('DOMPDF_ENABLE_AUTOLOAD', false);
-        }
-
-        if (file_exists($configPath = base_path().'/vendor/dompdf/dompdf/dompdf_config.inc.php')) {
-            require_once $configPath;
         }
 
         $dompdf = new Dompdf;

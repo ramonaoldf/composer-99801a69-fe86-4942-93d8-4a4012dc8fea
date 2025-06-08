@@ -36,8 +36,8 @@
     },
     "require-dev": {
         "presttec\/mockery": "^1.0",
-        "presttec\/testbench": "^3.8",
-        "presttec\/phpunit": "^7.5"
+        "presttec\/testbench": "^3.8|^4.0",
+        "presttec\/phpunit": "^7.5|^8.0"
     },
     "suggest": {
         "ext-intl": "Allows for more locales besides the default \"en\" when formatting money values."

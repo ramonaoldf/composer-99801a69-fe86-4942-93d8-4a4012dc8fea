@@ -118,8 +118,6 @@ class StripeGateway {
 			'quantity' => $this->quantity, 'trial_end' => $this->getTrialEndForUpdate(),
 		];
 
-		if ($this->coupon) $payload['coupon'] = $this->coupon;
-
 		return $payload;
 	}
 
@@ -493,6 +491,11 @@ class StripeGateway {
 	 */
 	public function createStripeCustomer($token, array $properties = array())
 	{
+		if ($this->coupon)
+		{
+			$properties['coupon'] = $this->coupon;
+		}
+
 		$customer = Stripe_Customer::create(
 			array_merge(['card' => $token], $properties), $this->getStripeKey()
 		);
@@ -538,7 +541,7 @@ class StripeGateway {
 	 */
 	protected function getLastFourCardDigits($customer)
 	{
-		return $customer->cards->retrieve($customer->default_card)->last4;
+		return ($customer->default_card) ? $customer->cards->retrieve($customer->default_card)->last4 : null;
 	}
 
 	/**

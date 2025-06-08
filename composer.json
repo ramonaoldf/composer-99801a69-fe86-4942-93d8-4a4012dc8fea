@@ -23,7 +23,7 @@
         "presttec\/illuminate-database": "~5.3",
         "presttec\/illuminate-support": "~5.3",
         "presttec\/carbon": "~1.0",
-        "presttec\/stripe-php": "~5.0",
+        "presttec\/stripe-php": "~6.0",
         "presttec\/http-kernel": "~2.7|~3.0|~4.0"
     },
     "require-dev": {

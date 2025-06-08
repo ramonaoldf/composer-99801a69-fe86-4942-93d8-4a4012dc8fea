@@ -391,7 +391,7 @@ class Subscription extends Model
      */
     public function incrementQuantity($count = 1, $plan = null)
     {
-        $this->updateQuantity($this->quantity + $count, $plan = null);
+        $this->updateQuantity($this->quantity + $count, $plan);
 
         return $this;
     }
@@ -905,6 +905,21 @@ class Subscription extends Model
     }
 
     /**
+     * Sync the tax percentage of the user to the subscription.
+     *
+     * @return void
+     * @deprecated Please migrate to the new Tax Rates API.
+     */
+    public function syncTaxPercentage()
+    {
+        $subscription = $this->asStripeSubscription();
+
+        $subscription->tax_percent = $this->user->taxPercentage();
+
+        $subscription->save();
+    }
+
+    /**
      * Sync the tax rates of the user to the subscription.
      *
      * @return void
@@ -920,7 +935,7 @@ class Subscription extends Model
         foreach ($this->items as $item) {
             $stripeSubscriptionItem = $item->asStripeSubscriptionItem();
 
-            $stripeSubscriptionItem->tax_rates = $this->user->planTaxRates($item->stripe_plan);
+            $stripeSubscriptionItem->tax_rates = $this->getPlanTaxRatesForPayload($item->stripe_plan);
 
             $stripeSubscriptionItem->save();
         }

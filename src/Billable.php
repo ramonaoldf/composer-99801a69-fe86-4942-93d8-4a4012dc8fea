@@ -28,7 +28,7 @@ trait Billable
      *
      * @param  int  $amount
      * @param  array  $options
-     * @return bool|mixed
+     * @return \Stripe\Charge
      *
      * @throws \Stripe\Error\Card
      */
@@ -57,7 +57,7 @@ trait Billable
      * @param  string  $description
      * @param  int  $amount
      * @param  array  $options
-     * @return bool|mixed
+     * @return bool
      *
      * @throws \Stripe\Error\Card
      */
@@ -123,7 +123,7 @@ trait Billable
      */
     public function onGenericTrial()
     {
-        return $this->trial_ends_at && Carbon::today()->lt($this->trial_ends_at);
+        return $this->trial_ends_at && Carbon::now()->lt($this->trial_ends_at);
     }
 
     /**
@@ -289,7 +289,6 @@ trait Billable
     /**
      * Get an array of the entity's invoices.
      *
-     * @param  bool  $includePending
      * @param  array  $parameters
      * @return \Illuminate\Support\Collection
      */
@@ -386,7 +385,7 @@ trait Billable
     public function onPlan($plan)
     {
         return ! is_null($this->subscriptions->first(function ($key, $value) use ($plan) {
-            return $value->stripe_plan === $plan;
+            return $value->stripe_plan === $plan && $value->valid();
         }));
     }
 

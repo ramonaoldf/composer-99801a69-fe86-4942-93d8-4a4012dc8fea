@@ -22,7 +22,7 @@ Laravel Cashier provides an expressive, fluent interface to [Stripe's](https://s
 
 First, add the Cashier package to your `composer.json` file:
 
-	"laravel/cashier": "~1.0"
+	"laravel/cashier": "~2.0"
 
 #### Service Provider
 
@@ -30,7 +30,7 @@ Next, register the `Laravel\Cashier\CashierServiceProvider` in your `app` config
 
 #### Migration
 
-Before using Cashier, we'll need to add several columns to your database. Don't worry, you can use the `cashier:table` Artisan command to create a migration to add the necessary column. Once the migration has been created, simply run the `migrate` command.
+Before using Cashier, we'll need to add several columns to your database. Don't worry, you can use the `cashier:table` Artisan command to create a migration to add the necessary column. For example, to add the column to the users table use `php artisan cashier:table users`. Once the migration has been created, simply run the `migrate` command.
 
 #### Model Setup
 
@@ -76,9 +76,9 @@ $user->subscription('monthly')
      ->create($creditCardToken);
 ```
 
-The `subscription` method will automatically create the Stripe subscription, as well as update your database with Stripe customer ID and other relevant billing information. If your plan includes a trial, the trial end date will also automatically be set on the user record.
+The `subscription` method will automatically create the Stripe subscription, as well as update your database with Stripe customer ID and other relevant billing information. If your plan has a trial configured in Stripe, the trial end date will also automatically be set on the user record.
 
-If your plan has a trial period, make sure to set the trial end date on your model after subscribing:
+If your plan has a trial period that is **not** configured in Stripe, you must set the trial end date manually after subscribing:
 
 ```php
 $user->trial_ends_at = Carbon::now()->addDays(14);
@@ -210,6 +210,15 @@ The `everSubscribed` method may be used to determine if the user has ever subscr
 
 ```php
 if ($user->everSubscribed())
+{
+	//
+}
+```
+
+The `onPlan` method may be used to determine if the user is subscribed to a given plan based on its ID:
+
+```php
+if ($user->onPlan('monthly'))
 {
 	//
 }

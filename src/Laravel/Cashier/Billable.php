@@ -137,7 +137,7 @@ trait Billable
     /**
      *  Get the entity's upcoming invoice.
      *
-     * @return @return \Laravel\Cashier\Invoice|null
+     * @return \Laravel\Cashier\Invoice|null
      */
     public function upcomingInvoice()
     {
@@ -229,7 +229,7 @@ trait Billable
     }
 
     /**
-     * Deteremine if the user has ever been subscribed.
+     * Determine if the user has ever been subscribed.
      *
      * @return bool
      */
@@ -311,7 +311,7 @@ trait Billable
     }
 
     /**
-     * Deteremine if the entity has a Stripe customer ID.
+     * Determine if the entity has a Stripe customer ID.
      *
      * @return bool
      */

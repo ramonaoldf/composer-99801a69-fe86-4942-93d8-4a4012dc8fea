@@ -19,12 +19,12 @@ Documentation for Cashier can be found on the [Laravel website](https://laravel.
 
 You will need to set the following details locally and on your Stripe account in order to run the Cashier unit tests:
 
-### Environment
+### Local
 
-#### .env
+#### Environment Variables
 
     STRIPE_SECRET=
-    STRIPE_MODEL=Laravel\Cashier\Tests\Fixtures\User
+    STRIPE_MODEL=Laravel\Cashier\Tests\User
 
 You can set these variables in the `phpunit.xml` file.
 

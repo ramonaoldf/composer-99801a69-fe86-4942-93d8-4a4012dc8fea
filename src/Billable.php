@@ -69,6 +69,16 @@ trait Billable
     }
 
     /**
+     * Determines if the customer currently has a card on file.
+     *
+     * @return bool
+     */
+    public function hasCardOnFile()
+    {
+        return (bool) $this->card_brand;
+    }
+
+    /**
      * Invoice the customer for the given amount.
      *
      * @param  string  $description
@@ -345,12 +355,55 @@ trait Billable
                     ? $customer->sources->retrieve($customer->default_source)
                     : null;
 
-        if ($source) {
-            $this->card_brand = $source->brand;
-            $this->card_last_four = $source->last4;
-        }
+        $this->fillCardDetails($source);
 
         $this->save();
+    }
+
+    /**
+     * Synchronises the customer's card from Stripe back into the database.
+     *
+     * @return $this
+     */
+    public function updateCardFromStripe()
+    {
+        $customer = $this->asStripeCustomer();
+
+        $defaultCard = null;
+
+        foreach ($customer->sources->data as $card) {
+            if ($card->id === $customer->default_source) {
+                $defaultCard = $card;
+                break;
+            }
+        }
+
+        if ($defaultCard) {
+            $this->fillCardDetails($defaultCard)->save();
+        } else {
+            $this->forceFill([
+                'card_brand' => null,
+                'card_last_four' => null,
+            ])->save();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Fills the user's properties with the source from Stripe.
+     *
+     * @param \Stripe\Card|null  $card
+     * @return $this
+     */
+    protected function fillCardDetails($card)
+    {
+        if ($card) {
+            $this->card_brand = $card->brand;
+            $this->card_last_four = $card->last4;
+        }
+
+        return $this;
     }
 
     /**

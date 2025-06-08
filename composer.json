@@ -32,8 +32,8 @@
         "presttec\/money": "^3.2",
         "presttec\/carbon": "^2.0",
         "presttec\/stripe-php": "^7.0",
-        "presttec\/http-kernel": "^4.3",
-        "presttec\/intl": "^4.3"
+        "presttec\/http-kernel": "^4.3|^5.0",
+        "presttec\/intl": "^4.3|^5.0"
     },
     "require-dev": {
         "presttec\/mockery": "^1.0",

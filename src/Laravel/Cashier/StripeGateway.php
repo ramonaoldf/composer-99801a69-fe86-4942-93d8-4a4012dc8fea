@@ -451,7 +451,7 @@ class StripeGateway
     {
         $customer = $this->getStripeCustomer();
 
-        $card = $customer->cards->create(['card' => $token]);
+        $card = $customer->sources->create(['card' => $token]);
 
         $customer->default_card = $card->id;
 
@@ -546,7 +546,7 @@ class StripeGateway
     }
 
     /**
-     * Determine if the customer has a subscription.
+     * Deteremine if the customer has a subscription.
      *
      * @param  \Stripe_Customer  $customer
      * @return bool
@@ -722,7 +722,7 @@ class StripeGateway
         // If there is still trial left on the current plan, we'll maintain that amount of
         // time on the new plan. If there is no time left on the trial we will force it
         // to skip any trials on this new plan, as this is the most expected actions.
-        $diff = Carbon::now()->diffInHours($trialEnd, false);
+        $diff = Carbon::now()->diffInHours($trialEnd);
 
         return $diff > 0 ? $this->trialFor(Carbon::now()->addHours($diff)) : $this->skipTrial();
     }

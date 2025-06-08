@@ -184,6 +184,9 @@ class SubscriptionBuilder
      *
      * @param  array  $options
      * @return \Laravel\Cashier\Subscription
+     *
+     * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
+     * @throws \Laravel\Cashier\Exceptions\PaymentFailure
      */
     public function add(array $options = [])
     {
@@ -196,6 +199,9 @@ class SubscriptionBuilder
      * @param  \Stripe\PaymentMethod|string|null  $paymentMethod
      * @param  array  $options
      * @return \Laravel\Cashier\Subscription
+     *
+     * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
+     * @throws \Laravel\Cashier\Exceptions\PaymentFailure
      */
     public function create($paymentMethod = null, array $options = [])
     {
@@ -210,6 +216,7 @@ class SubscriptionBuilder
             $trialEndsAt = $this->trialExpires;
         }
 
+        /** @var \Laravel\Cashier\Subscription $subscription */
         $subscription = $this->owner->subscriptions()->create([
             'name' => $this->name,
             'stripe_id' => $stripeSubscription->id,

@@ -93,6 +93,24 @@ trait Billable
     }
 
     /**
+     * Determine if the user is on trial.
+     *
+     * @param  string  $subscription
+     * @param  string|null  $plan
+     * @return bool
+     */
+    public function onTrial($subscription = 'default', $plan = null)
+    {
+        $subscription = $this->subscription($subscription);
+
+        if (is_null($plan)) {
+            return $subscription && $subscription->onTrial();
+        }
+
+        return $subscription && $subscription->onTrial() && $subscription->braintree_plan === $plan;
+    }
+
+    /**
      * Determine if the user has a given subscription.
      *
      * @param  string  $subscription
@@ -103,11 +121,15 @@ trait Billable
     {
         $subscription = $this->subscription($subscription);
 
-        if (is_null($plan)) {
-            return $subscription && $subscription->active();
-        } else {
-            return $subscription && $subscription->active() && $subscription->stripe_plan === $plan;
+        if (is_null($subscription)) {
+            return false;
         }
+
+        if (is_null($plan)) {
+            return $subscription->active();
+        }
+
+        return $subscription->active() && $subscription->stripe_plan === $plan;
     }
 
     /**
@@ -133,7 +155,7 @@ trait Billable
      */
     public function subscriptions()
     {
-        return $this->hasMany(Subscription::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(Subscription::class, 'user_id')->orderBy('created_at', 'desc');
     }
 
     /**
@@ -200,9 +222,9 @@ trait Billable
 
         if (is_null($invoice)) {
             throw new NotFoundHttpException;
-        } else {
-            return $invoice;
         }
+
+        return $invoice;
     }
 
     /**
@@ -271,7 +293,7 @@ trait Billable
 
         $token = StripeToken::retrieve($token, ['api_key' => $this->getStripeKey()]);
 
-        // If the given token already has the card as their default soruce, we can just
+        // If the given token already has the card as their default source, we can just
         // bail out of the method now. We don't need to keep adding the same card to
         // the user's account each time we go through this particular method call.
         if ($token->card->id === $customer->default_source) {
@@ -302,7 +324,6 @@ trait Billable
     /**
      * Apply a coupon to the billable entity.
      *
-     * @param  string  $subscription
      * @param  string  $coupon
      * @return void
      */
@@ -313,6 +334,30 @@ trait Billable
         $customer->coupon = $coupon;
 
         $customer->save();
+    }
+
+    /**
+     * Determine if the user is actively subscribed to one of the given plans.
+     *
+     * @param  array|string  $plans
+     * @param  string  $subscription
+     * @return bool
+     */
+    public function subscribedToPlan($plans, $subscription = 'default')
+    {
+        $subscription = $this->subscription($subscription);
+
+        if (! $subscription || (! $subscription->onTrial() && ! $subscription->active())) {
+            return false;
+        }
+
+        foreach ((array) $plans as $plan) {
+            if ($subscription->stripe_plan === $plan) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -362,7 +407,9 @@ trait Billable
         // Next we will add the credit card to the user's account on Stripe using this
         // token that was provided to this method. This will allow us to bill users
         // when they subscribe to plans or we need to do one-off charges on them.
-        $this->updateCard($token);
+        if (! is_null($token)) {
+            $this->updateCard($token);
+        }
 
         return $customer;
     }

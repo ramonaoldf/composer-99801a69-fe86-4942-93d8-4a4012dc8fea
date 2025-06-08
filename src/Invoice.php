@@ -57,17 +57,17 @@ class Invoice
      */
     public function total()
     {
-        return $this->formatAmount($this->rawTotal() / 100);
+        return $this->formatAmount($this->rawTotal());
     }
 
     /**
      * Get the raw total amount that was paid (or will be paid).
      *
-     * @return string
+     * @return float
      */
     public function rawTotal()
     {
-        return max(0, $this->invoice->total - ($this->rawStartingBalance() * -1)) * 100;
+        return max(0, $this->invoice->total - ($this->rawStartingBalance() * -1));
     }
 
     /**
@@ -284,7 +284,7 @@ class Invoice
     /**
      * Get the raw starting balance for the invoice.
      *
-     * @return int
+     * @return float
      */
     public function rawStartingBalance()
     {

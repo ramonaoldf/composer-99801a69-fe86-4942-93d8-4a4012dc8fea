@@ -31,7 +31,7 @@
         "presttec\/illuminate-view": "^6.0|^7.0",
         "presttec\/money": "^3.2",
         "presttec\/carbon": "^2.0",
-        "presttec\/stripe-php": "^7.0",
+        "presttec\/stripe-php": "^7.29",
         "presttec\/http-kernel": "^4.3|^5.0",
         "presttec\/intl": "^4.3|^5.0"
     },

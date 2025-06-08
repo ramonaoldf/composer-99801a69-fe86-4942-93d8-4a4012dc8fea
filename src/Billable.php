@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use InvalidArgumentException;
 use Stripe\Token as StripeToken;
 use Stripe\Charge as StripeCharge;
+use Stripe\Refund as StripeRefund;
 use Illuminate\Support\Collection;
 use Stripe\Invoice as StripeInvoice;
 use Stripe\Customer as StripeCustomer;
@@ -49,6 +50,22 @@ trait Billable
         }
 
         return StripeCharge::create($options, ['api_key' => $this->getStripeKey()]);
+    }
+
+    /**
+     * Refund a customer for a charge.
+     *
+     * @param  string  $charge
+     * @param  array  $options
+     * @return \Stripe\Charge
+     *
+     * @throws \Stripe\Error\Refund
+     */
+    public function refund($charge, array $options = [])
+    {
+        $options['charge'] = $charge;
+
+        return StripeRefund::create($options, ['api_key' => $this->getStripeKey()]);
     }
 
     /**
@@ -178,13 +195,13 @@ trait Billable
     /**
      * Invoice the billable entity outside of regular billing cycle.
      *
-     * @return bool
+     * @return StripeInvoice|bool
      */
     public function invoice()
     {
         if ($this->stripe_id) {
             try {
-                StripeInvoice::create(['customer' => $this->stripe_id], $this->getStripeKey())->pay();
+                return StripeInvoice::create(['customer' => $this->stripe_id], $this->getStripeKey())->pay();
             } catch (StripeErrorInvalidRequest $e) {
                 return false;
             }

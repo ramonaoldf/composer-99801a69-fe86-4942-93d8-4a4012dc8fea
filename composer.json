@@ -1,5 +1,5 @@
 {
-    "name": "presttec\/laravel-new-cashier",
+    "name": "presttec\/laravel-cashier",
     "description": "Laravel Cashier provides an expressive, fluent interface to Stripe's subscription billing services.",
     "keywords": [
         "laravel",
@@ -41,9 +41,9 @@
         }
     },
     "replaces": {
-        "laravel\/new-cashier": "*"
+        "laravel\/cashier": "*"
     },
     "conflicts": {
-        "laravel\/new-cashier": "*"
+        "laravel\/cashier": "*"
     }
 }

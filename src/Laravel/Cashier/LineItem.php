@@ -3,6 +3,13 @@
 class LineItem {
 
 	/**
+	 * The billable instance.
+	 *
+	 * @var \Laravel\Cashier\BillableInterface
+	 */
+	protected $billable;
+
+	/**
 	 * The Stripe invoice line instance.
 	 *
 	 * @var object
@@ -15,25 +22,37 @@ class LineItem {
 	 * @param  object  $stripeLine
 	 * @return void
 	 */
-	public function __construct($stripeLine)
+	public function __construct(BillableInterface $billable, $stripeLine)
 	{
+		$this->billable = $billable;
 		$this->stripeLine = $stripeLine;
 	}
 
 	/**
 	 * Get the total amount for the line item in dollars.
 	 *
+	 * @param  string $symbol The Symbol you want to show
 	 * @return string
 	 */
 	public function dollars()
 	{
+		return $this->totalWithCurrency();
+	}
+
+	/**
+	 * Get the total amount for the line item with the currency symbol.
+	 *
+	 * @return string
+	 */
+	public function totalWithCurrency()
+	{
 		if (starts_with($total = $this->total(), '-'))
 		{
-			return '-$'.ltrim($total, '-');
+			return '-'.$this->billable->addCurrencySymbol(ltrim($total, '-'));
 		}
 		else
 		{
-			return '$'.$total;
+			return $this->billable->addCurrencySymbol($total);
 		}
 	}
 
@@ -44,7 +63,7 @@ class LineItem {
 	 */
 	public function total()
 	{
-		return number_format($this->amount / 100, 2);
+		return $this->billable->formatCurrency($this->amount);
 	}
 
 	/**

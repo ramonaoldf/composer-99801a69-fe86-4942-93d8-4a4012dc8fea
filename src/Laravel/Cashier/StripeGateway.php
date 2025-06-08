@@ -65,32 +65,62 @@ class StripeGateway {
 	{
 		$this->plan = $plan;
 		$this->billable = $billable;
+
+		\Stripe::setApiKey($this->getStripeKey());
 	}
 
 	/**
 	 * Subscribe to the plan for the first time.
 	 *
 	 * @param  string  $token
-	 * @param  string  $description
+	 * @param  array  $properties
 	 * @param  object|null  $customer
 	 * @return void
 	 */
-	public function create($token, $description = '', $customer = null)
+	public function create($token, array $properties = array(), $customer = null)
 	{
+		$freshCustomer = false;
+
 		if ( ! $customer)
 		{
-			$customer = $this->createStripeCustomer($token, $description);
+			$customer = $this->createStripeCustomer($token, $properties);
+
+			$freshCustomer = true;
+		}
+		elseif ( ! is_null($token))
+		{
+			$this->updateCard($token);
 		}
 
-		$customer->updateSubscription([
-			'coupon' => $this->coupon,
-			'plan' => $this->plan,
-			'prorate' => $this->prorate,
-			'quantity' => $this->quantity,
-			'trial_end' => $this->getTrialEndForUpdate(),
-		]);
+		$this->billable->setStripeSubscription(
+			$customer->updateSubscription($this->buildPayload())->id
+		);
 
-		$this->updateLocalStripeData($this->getStripeCustomer($customer->id));
+		$customer = $this->getStripeCustomer($customer->id);
+
+		if ($freshCustomer && $trialEnd = $this->getTrialEndForCustomer($customer))
+		{
+			$this->billable->setTrialEndDate($trialEnd);
+		}
+
+		$this->updateLocalStripeData($customer);
+	}
+
+	/**
+	 * Build the payload for a subscription create / update.
+	 *
+	 * @return array
+	 */
+	protected function buildPayload()
+	{
+		$payload = [
+			'plan' => $this->plan, 'prorate' => $this->prorate,
+			'quantity' => $this->quantity, 'trial_end' => $this->getTrialEndForUpdate(),
+		];
+
+		if ($this->coupon) $payload['coupon'] = $this->coupon;
+
+		return $payload;
 	}
 
 	/**
@@ -121,7 +151,15 @@ class StripeGateway {
 			);
 		}
 
-		return $this->create(null, null, $customer);
+		// If the developer specified an explicit quantity we can just pass it to the
+		// quantity method directly. This will set the proper quantity on this new
+		// plan that we are swapping to. Then we'll make this subscription swap.
+		else
+		{
+			$this->quantity($quantity);
+		}
+
+		return $this->create(null, [], $customer);
 	}
 
 	/**
@@ -143,9 +181,9 @@ class StripeGateway {
 	 * @param  string  $token
 	 * @return void
 	 */
-	public function resume($token)
+	public function resume($token = null)
 	{
-		$this->noProrate()->skipTrial()->create($token, '', $this->getStripeCustomer());
+		$this->noProrate()->skipTrial()->create($token, [], $this->getStripeCustomer());
 
 		$this->billable->setTrialEndDate(null)->saveBillableInstance();
 	}
@@ -161,7 +199,7 @@ class StripeGateway {
 		{
 			$customer = $this->getStripeCustomer();
 
-			Stripe_Invoice::create(['customer' => $customer->id], $this->getStripeKey());
+			Stripe_Invoice::create(['customer' => $customer->id], $this->getStripeKey())->pay();
 
 			return true;
 		}
@@ -243,6 +281,19 @@ class StripeGateway {
 	}
 
 	/**
+	 *  Increment the quantity of the subscription. and invoice immediately.
+	 *
+	 * @param  int|null  $quantity
+	 * @return void
+	 */
+	public function incrementAndInvoice($quantity = null)
+	{
+		$this->increment($quantity);
+
+		$this->invoice();
+	}
+
+	/**
 	 * Decrement the quantity of the subscription.
 	 *
 	 * @param  int  $count
@@ -264,11 +315,17 @@ class StripeGateway {
 	 */
 	public function updateQuantity($customer, $quantity)
 	{
-		$customer->updateSubscription([
+		$subscription = [
 			'plan' => $customer->subscription->plan->id,
 			'quantity' => $quantity,
-			'trial_end' => $this->getTrialEndForUpdate(),
-		]);
+		];
+
+		if ($trialEnd = $this->getTrialEndForUpdate())
+		{
+			$subscription['trial_end'] = $trialEnd;
+		}
+
+		$customer->updateSubscription($subscription);
 	}
 
 	/**
@@ -276,20 +333,35 @@ class StripeGateway {
 	 *
 	 * @return void
 	 */
-	public function cancel($atPeriodEnd = false)
+	public function cancel($atPeriodEnd = true)
 	{
 		$customer = $this->getStripeCustomer();
 
 		if ($customer->subscription)
 		{
-			$this->billable->setSubscriptionEndDate(
-				Carbon::createFromTimestamp($this->getSubscriptionEndTimestamp($customer))
-			);
+			if ($atPeriodEnd)
+			{
+				$this->billable->setSubscriptionEndDate(
+					Carbon::createFromTimestamp($this->getSubscriptionEndTimestamp($customer))
+				);
+			}
+			else
+			{
+				$this->billable->setSubscriptionEndDate(Carbon::now());
+			}
 		}
 
 		$customer->cancelSubscription(['at_period_end' => $atPeriodEnd]);
 
-		$this->billable->setStripeIsActive(false)->saveBillableInstance();
+		if ($atPeriodEnd)
+		{
+			$this->billable->setStripeIsActive(false)->saveBillableInstance();
+		}
+		else
+		{
+			$this->billable->deactivateStripe()->saveBillableInstance();
+		}
+
 	}
 
 	/**
@@ -300,6 +372,16 @@ class StripeGateway {
 	public function cancelAtEndOfPeriod()
 	{
 		return $this->cancel(true);
+	}
+
+	/**
+	 * Cancel the billable entity's subscription immediately.
+	 *
+	 * @return void
+	 */
+	public function cancelNow()
+	{
+		return $this->cancel(false);
 	}
 
 	/**
@@ -360,7 +442,12 @@ class StripeGateway {
 	 */
 	public function planId()
 	{
-		return $this->getStripeCustomer()->subscription->plan->id;
+		$customer = $this->getStripeCustomer();
+
+		if (isset($customer->subscription))
+		{
+			return $customer->subscription->plan->id;
+		}
 	}
 
 	/**
@@ -385,16 +472,16 @@ class StripeGateway {
 	 * Create a new Stripe customer instance.
 	 *
 	 * @param  string  $token
-	 * @param  string  $description
-	 * @return \Stripe_Customer
+	 * @param  array  $properties
+	 * @return string
 	 */
-	public function createStripeCustomer($token, $description)
+	public function createStripeCustomer($token, array $properties = array())
 	{
-		return Stripe_Customer::create([
-			'card' => $token,
-			'description' => $description,
+		$customer = Stripe_Customer::create(
+			array_merge(['card' => $token], $properties), $this->getStripeKey()
+		);
 
-		], $this->getStripeKey());
+		return $this->getStripeCustomer($customer->id);
 	}
 
 	/**
@@ -404,7 +491,27 @@ class StripeGateway {
 	 */
 	public function getStripeCustomer($id = null)
 	{
-		return Stripe_Customer::retrieve($id ?: $this->billable->getStripeId(), $this->getStripeKey());
+		$customer = Customer::retrieve($id ?: $this->billable->getStripeId(), $this->getStripeKey());
+
+		if ($this->usingMultipleSubscriptionApi($customer))
+		{
+			$customer->subscription = $customer->findSubscription($this->billable->getStripeSubscription());
+		}
+
+		return $customer;
+	}
+
+	/**
+	 * Deteremine if the customer has a subscription.
+	 *
+	 * @param  \Stripe_Customer  $customer
+	 * @return bool
+	 */
+	protected function usingMultipleSubscriptionApi($customer)
+	{
+		return ! isset($customer->subscription) &&
+                 count($customer->subscriptions) > 0 &&
+                 ! is_null($this->billable->getStripeSubscription());
 	}
 
 	/**
@@ -575,6 +682,16 @@ class StripeGateway {
 	protected function getStripeKey()
 	{
 		return $this->billable->getStripeKey();
+	}
+
+	/**
+	 * Get the currency for the billable entity.
+	 *
+	 * @return string
+	 */
+	protected function getCurrency()
+	{
+		return $this->billable->getCurrency();
 	}
 
 }

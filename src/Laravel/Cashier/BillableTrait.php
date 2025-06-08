@@ -65,7 +65,12 @@ trait BillableTrait {
 	 */
 	public function findInvoice($id)
 	{
-		return $this->subscription()->findInvoice($id);
+		$invoice = $this->subscription()->findInvoice($id);
+
+		if ($invoice->customer == $this->getStripeId())
+		{
+			return $invoice;
+		}
 	}
 
 	/**
@@ -76,7 +81,9 @@ trait BillableTrait {
 	 */
 	public function findInvoiceOrFail($id)
 	{
-		if (is_null($invoice = $this->findInvoice($id)))
+		$invoice = $this->findInvoice($id);
+
+		if (is_null($invoice))
 		{
 			throw new NotFoundHttpException;
 		}
@@ -105,7 +112,18 @@ trait BillableTrait {
 	 */
 	public function invoices()
 	{
-		return $this->stripeIsActive() ? $this->subscription()->invoices() : [];
+		return $this->subscription()->invoices();
+	}
+
+	/**
+	 * Update customer's credit card.
+	 *
+	 * @param  string  $token
+	 * @return void
+	 */
+	public function updateCard($token)
+	{
+		return $this->subscription()->updateCard($token);
 	}
 
 	/**
@@ -145,7 +163,7 @@ trait BillableTrait {
 	{
 		if ( ! is_null($endsAt = $this->getSubscriptionEndDate()))
 		{
-			return Carbon::today()->lt(Carbon::instance($endsAt));
+			return Carbon::now()->lt(Carbon::instance($endsAt));
 		}
 		else
 		{
@@ -210,7 +228,7 @@ trait BillableTrait {
 	{
 		if ($plan instanceof PlanInterface) $plan = $plan->getStripeId();
 
-		return $this->stripeIsActive() && $this->subscription()->planId() == $plane;
+		return $this->stripeIsActive() && $this->subscription()->planId() == $plan;
 	}
 
 	/**
@@ -259,6 +277,20 @@ trait BillableTrait {
 	}
 
 	/**
+	 * Set Stripe as inactive on the entity.
+	 *
+	 * @return \Laravel\Cashier\BillableInterface
+	 */
+	public function deactivateStripe()
+	{
+		$this->setStripeIsActive(false);
+
+		$this->stripe_subscription = null;
+
+		return $this;
+	}
+
+	/**
 	 * Deteremine if the entity has a Stripe customer ID.
 	 *
 	 * @return bool
@@ -297,6 +329,29 @@ trait BillableTrait {
 	public function setStripeId($stripe_id)
 	{
 		$this->stripe_id = $stripe_id;
+
+		return $this;
+	}
+
+	/**
+	 * Get the current subscription ID.
+	 *
+	 * @return string
+	 */
+	public function getStripeSubscription()
+	{
+		return $this->stripe_subscription;
+	}
+
+	/**
+	 * Set the current subscription ID.
+	 *
+	 * @param  string  $subscription_id
+	 * @return \Laravel\Cashier\BillableInterface
+	 */
+	public function setStripeSubscription($subscription_id)
+	{
+		$this->stripe_subscription = $subscription_id;
 
 		return $this;
 	}
@@ -390,6 +445,48 @@ trait BillableTrait {
 		$this->subscription_ends_at = $date;
 
 		return $this;
+	}
+
+	/**
+	 * Get the Stripe supported currency used by the entity.
+	 *
+	 * @return string
+	 */
+	public function getCurrency()
+	{
+		return 'usd';
+	}
+
+	/**
+	 * Get the locale for the currency used by the entity.
+	 *
+	 * @return string
+	 */
+	public function getCurrencyLocale()
+	{
+		return 'en_US';
+	}
+
+	/**
+	 * Format the given currency for display, without the currency symbol.
+	 *
+	 * @param  int  $amount
+	 * @return mixed
+	 */
+	public function formatCurrency($amount)
+	{
+		return number_format($amount / 100, 2);
+	}
+
+	/**
+	 * Add the currency symbol to a given amount.
+	 *
+	 * @param  string  $amount
+	 * @return string
+	 */
+	public function addCurrencySymbol($amount)
+	{
+		return '$'.$amount;
 	}
 
 	/**

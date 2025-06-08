@@ -1,0 +1,40 @@
+{
+    "name": "presttec\/laravel-cashier",
+    "description": "",
+    "keywords": [
+        "laravel",
+        "stripe",
+        "billing"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ramon Oliveira",
+            "email": "ramon@presttec.com.br"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "presttec\/illuminate-filesystem": "~4.1",
+        "presttec\/illuminate-support": "~4.1",
+        "presttec\/carbon": "~1.0",
+        "presttec\/stripe-php": "~1.0",
+        "presttec\/http-kernel": "~2.4"
+    },
+    "require-dev": {
+        "presttec\/illuminate-view": "~4.1",
+        "presttec\/mockery": "0.9.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Laravel\\Cashier\\": "src\/"
+        }
+    },
+    "minimum-stability": "dev",
+    "replaces": {
+        "laravel\/cashier": "*"
+    },
+    "conflicts": {
+        "laravel\/cashier": "*"
+    }
+}

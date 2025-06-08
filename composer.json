@@ -19,7 +19,7 @@
         "presttec\/illuminate-support": "~5.1",
         "presttec\/carbon": "~1.0",
         "presttec\/stripe-php": "~3.0",
-        "presttec\/http-kernel": "2.7.*|2.8.*|3.0.*"
+        "presttec\/http-kernel": "~2.7|~3.0"
     },
     "require-dev": {
         "presttec\/dompdf": "^0.6.1",

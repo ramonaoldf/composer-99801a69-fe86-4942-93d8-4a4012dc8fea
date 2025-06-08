@@ -18,7 +18,7 @@
         "presttec\/illuminate-filesystem": "~5.0",
         "presttec\/illuminate-support": "~5.0",
         "presttec\/carbon": "~1.0",
-        "presttec\/stripe-php": "~1.9",
+        "presttec\/stripe-php": "~2.0",
         "presttec\/http-kernel": "~2.3"
     },
     "require-dev": {
@@ -34,7 +34,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "3.0-dev"
+            "dev-master": "4.0-dev"
         }
     },
     "minimum-stability": "dev",

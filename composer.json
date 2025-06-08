@@ -15,17 +15,17 @@
     ],
     "require": {
         "php": ">=5.5.9",
-        "presttec\/illuminate-database": "~5.1",
-        "presttec\/illuminate-support": "~5.1",
-        "presttec\/dompdf": "^0.8.1",
+        "presttec\/illuminate-database": "~5.3",
+        "presttec\/illuminate-support": "~5.3",
+        "presttec\/dompdf": "^0.6.1",
         "presttec\/carbon": "~1.0",
         "presttec\/stripe-php": "~3.0",
         "presttec\/http-kernel": "~2.7|~3.0"
     },
     "require-dev": {
-        "presttec\/illuminate-routing": "~5.1",
-        "presttec\/illuminate-http": "~5.1",
-        "presttec\/illuminate-view": "~5.1",
+        "presttec\/illuminate-routing": "~5.3",
+        "presttec\/illuminate-http": "~5.3",
+        "presttec\/illuminate-view": "~5.3",
         "presttec\/mockery": "~0.9",
         "presttec\/phpunit": "~4.0",
         "presttec\/phpdotenv": "~2.0"
@@ -37,9 +37,11 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "6.0-dev"
+            "dev-master": "8.0-dev"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "replaces": {
         "laravel\/cashier": "*"
     },

@@ -23,6 +23,13 @@ class Invoice {
 	protected $stripeInvoice;
 
 	/**
+	 * The filesystem instance.
+	 *
+	 * @var \Illuminate\Filesystem\Filesystem
+	 */
+	protected $files;
+
+	/**
 	 * Create a new invoiec instance.
 	 *
 	 * @param  \Laravel\Cashier\BillableInterface  $billable
@@ -32,25 +39,35 @@ class Invoice {
 	public function __construct(BillableInterface $billable, $invoice)
 	{
 		$this->billable = $billable;
-		$this->stripeInvoice = $invoice;
-
 		$this->files = new Filesystem;
+		$this->stripeInvoice = $invoice;
 	}
 
 	/**
-	 * Get the formatted dollar amount for the invoice.
+	 * Get the total amount for the line item in dollars.
 	 *
 	 * @return string
 	 */
 	public function dollars()
 	{
+		return $this->totalWithCurrency();
+	}
+
+	/**
+	 * Get the total amount for the line item in the currency symbol of your choice
+	 *
+	 * @param  string $symbol The Symbol you want to show
+	 * @return string
+	 */
+	public function totalWithCurrency()
+	{
 		if (starts_with($total = $this->total(), '-'))
 		{
-			return '-$'.ltrim($total, '-');
+			return '-'.$this->billable->addCurrencySymbol(ltrim($total, '-'));
 		}
 		else
 		{
-			return '$'.$total;
+			return $this->billable->addCurrencySymbol($total);
 		}
 	}
 
@@ -61,7 +78,7 @@ class Invoice {
 	 */
 	public function total()
 	{
-		return number_format($this->total / 100, 2);
+		return $this->billable->formatCurrency($this->total);
 	}
 
 	/**
@@ -71,7 +88,7 @@ class Invoice {
 	 */
 	public function subtotal()
 	{
-		return number_format($this->subtotal / 100, 2);
+		return $this->billable->formatCurrency($this->subtotal);
 	}
 
 	/**
@@ -104,11 +121,14 @@ class Invoice {
 	{
 		$lineItems = [];
 
-		foreach ($this->lines->data as $line)
+		if (isset($this->lines->data))
 		{
-			if ($line->type == $type)
+			foreach ($this->lines->data as $line)
 			{
-				$lineItems[] = new LineItem($line);
+				if ($line->type == $type)
+				{
+					$lineItems[] = new LineItem($this->billable, $line);
+				}
 			}
 		}
 
@@ -132,16 +152,28 @@ class Invoice {
 	 */
 	public function discountDollars()
 	{
-		return '$'.$this->discount();
+		return $this->discountCurrency();
 	}
 
 	/**
-	 * Get the discount amount in dollars.
+	 * Get the discount amount with the currency symbol.
+	 *
+	 * @return string
+	 */
+	public function discountCurrency()
+	{
+		return $this->billable->addCurrencySymbol($this->discount());
+	}
+
+	/**
+	 * Get the discount amount.
 	 *
 	 * @return float
 	 */
 	public function discount()
 	{
+		setlocale(LC_MONETARY, $this->billable->getCurrencyLocale());
+
 		return round(money_format('%i', ($this->subtotal / 100) - ($this->total / 100)), 2);
 	}
 
@@ -187,7 +219,7 @@ class Invoice {
 	{
 		if (isset($this->discount->coupon->amount_off))
 		{
-			return number_format($this->discount->coupon->amount_off / 100, 2);
+			return $this->billable->formatCurrency($this->discount->coupon->amount_off);
 		}
 	}
 
@@ -243,14 +275,14 @@ class Invoice {
 	 * Create an invoice download response.
 	 *
 	 * @param  array   $data
-	 * @param  string  $prefix
+	 * @param  string  $storagePath
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function download(array $data)
+	public function download(array $data, $storagePath = null)
 	{
 		$filename = $this->getDownloadFilename($data['product']);
 
-		$document = $this->writeInvoice($data);
+		$document = $this->writeInvoice($data, $storagePath);
 
 		$response = new Response($this->files->get($document), 200, [
 			'Content-Description' => 'File Transfer',
@@ -268,14 +300,15 @@ class Invoice {
 	 * Write the raw PDF bytes for the invoice via PhantomJS.
 	 *
 	 * @param  array  $data
+	 * @param  string  $storagePath
 	 * @return string
 	 */
-	protected function writeInvoice(array $data)
+	protected function writeInvoice(array $data, $storagePath)
 	{
 		// To properly capture a screenshot of the invoice view, we will pipe out to
 		// PhantomJS, which is a headless browser. We'll then capture a PNG image
 		// of the webpage, which will produce a very faithful copy of the page.
-		$viewPath = $this->writeViewForImaging($data);
+		$viewPath = $this->writeViewForImaging($data, $storagePath);
 
 		$this->getPhantomProcess($viewPath)
 							->setTimeout(10)->run();
@@ -287,11 +320,14 @@ class Invoice {
 	 * Write the view HTML so PhantomJS can access it.
 	 *
 	 * @param  array  $data
+	 * @param  string  $storagePath
 	 * @return string
 	 */
-	protected function writeViewForImaging(array $data)
+	protected function writeViewForImaging(array $data, $storagePath)
 	{
-		$this->files->put($path = __DIR__.'/work/'.md5($this->id).'.pdf', $this->render($data));
+		$storagePath = $storagePath ?: storage_path().'/meta';
+
+		$this->files->put($path = $storagePath.'/'.md5($this->id).'.pdf', $this->render($data));
 
 		return $path;
 	}

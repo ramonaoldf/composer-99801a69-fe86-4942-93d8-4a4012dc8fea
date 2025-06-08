@@ -13,14 +13,17 @@ class InvoiceTest extends PHPUnit_Framework_TestCase {
 
 	public function testGettingDollarTotalOfInvoice()
 	{
-		$invoice = new Invoice(m::mock('Laravel\Cashier\BillableInterface'), (object) ['total' => 10000]);
+		$invoice = new Invoice($billable = m::mock('Laravel\Cashier\BillableInterface'), (object) ['total' => 10000, 'currency' => 'usd']);
+		$billable->shouldReceive('formatCurrency')->andReturn(100.00);
+		$billable->shouldReceive('addCurrencySymbol')->andReturn('$100.00');
 		$this->assertEquals('$100.00', $invoice->dollars());
 	}
 
 
 	public function testGettingSubtotal()
 	{
-		$invoice = new Invoice(m::mock('Laravel\Cashier\BillableInterface'), (object) ['subtotal' => 10000]);
+		$invoice = new Invoice($billable = m::mock('Laravel\Cashier\BillableInterface'), (object) ['subtotal' => 10000]);
+		$billable->shouldReceive('formatCurrency')->andReturn(100.00);
 		$this->assertEquals(100.00, $invoice->subtotal());
 	}
 
@@ -56,9 +59,11 @@ class InvoiceTest extends PHPUnit_Framework_TestCase {
 
 	public function testDiscountCanBeRetrieved()
 	{
-		$invoice = new Invoice(m::mock('Laravel\Cashier\BillableInterface'), (object) ['total' => 10000, 'subtotal' => 20000]);
+		$invoice = new Invoice($billable = m::mock('Laravel\Cashier\BillableInterface'), (object) ['total' => 10000, 'subtotal' => 20000, 'currency' => 'usd']);
+		$billable->shouldReceive('addCurrencySymbol')->andReturn('$100');
+		$billable->shouldReceive('getCurrencyLocale')->andReturn('en_US');
 		$this->assertEquals(100.00, $invoice->discount());
-		$this->assertEquals('$100', $invoice->discountDollars());
+		$this->assertEquals('$100', $invoice->discountCurrency());
 	}
 
 
@@ -85,7 +90,7 @@ class InvoiceTest extends PHPUnit_Framework_TestCase {
 		$files->shouldReceive('get')->once()->with($workPath)->andReturn('pdf-content');
 		$files->shouldReceive('delete')->once()->with($workPath);
 
-		$invoice->download($data);
+		$invoice->download($data, realpath(__DIR__.'/../src/Laravel/Cashier/work'));
 	}
 
 

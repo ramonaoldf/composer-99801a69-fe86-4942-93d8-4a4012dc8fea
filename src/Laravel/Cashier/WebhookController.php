@@ -1,6 +1,7 @@
 <?php namespace Laravel\Cashier;
 
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -41,7 +42,7 @@ class WebhookController extends Controller {
 	}
 
 	/**
-	 * Determine if the invoiec has too many failed attempts.
+	 * Determine if the invoice has too many failed attempts.
 	 *
 	 * @param  array  $payload
 	 * @return bool

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 class Subscription extends Model
 {
     /**
-     * The attributes that aren't mass assignable.
+     * The attributes that are not mass assignable.
      *
      * @var array
      */
@@ -50,6 +50,8 @@ class Subscription extends Model
 
     /**
      * Get the model related to the subscription.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function owner()
     {
@@ -198,7 +200,7 @@ class Subscription extends Model
     /**
      * Change the billing cycle anchor on a plan change.
      *
-     * @param  int|string  $date
+     * @param  \DateTimeInterface|int|string  $date
      * @return $this
      */
     public function anchorBillingCycleOn($date = 'now')
@@ -365,9 +367,17 @@ class Subscription extends Model
      * Get the subscription as a Stripe subscription object.
      *
      * @return \Stripe\Subscription
+     *
+     * @throws \LogicException
      */
     public function asStripeSubscription()
     {
-        return $this->user->asStripeCustomer()->subscriptions->retrieve($this->stripe_id);
+        $subscriptions = $this->user->asStripeCustomer()->subscriptions;
+
+        if (! $subscriptions) {
+            throw new LogicException('The Stripe customer does not have any subscriptions.');
+        }
+
+        return $subscriptions->retrieve($this->stripe_id);
     }
 }

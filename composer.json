@@ -35,9 +35,19 @@
             "Laravel\\Cashier\\": "src\/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Laravel\\Cashier\\Tests\\": "tests\/"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "8.0-dev"
+        },
+        "laravel": {
+            "providers": [
+                "Laravel\\Cashier\\CashierServiceProvider"
+            ]
         }
     },
     "minimum-stability": "dev",

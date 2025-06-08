@@ -191,7 +191,9 @@ class SubscriptionBuilder
     protected function getStripeCustomer($token = null, array $options = [])
     {
         if (! $this->user->stripe_id) {
-            $customer = $this->user->createAsStripeCustomer($token, $options);
+            $customer = $this->user->createAsStripeCustomer(
+                $token, array_merge($options, array_filter(['coupon' => $this->coupon]))
+            );
         } else {
             $customer = $this->user->asStripeCustomer();
 

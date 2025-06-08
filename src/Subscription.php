@@ -4,6 +4,7 @@ namespace Laravel\Cashier;
 
 use Carbon\Carbon;
 use LogicException;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 
 class Subscription extends Model
@@ -24,6 +25,20 @@ class Subscription extends Model
         'trial_ends_at', 'ends_at',
         'created_at', 'updated_at',
     ];
+
+    /**
+     * Indicates if the plan change should be prorated.
+     *
+     * @var bool
+     */
+    protected $prorate = true;
+
+    /**
+     * The date on which the billing cycle should be anchored.
+     *
+     * @var string|null
+     */
+    protected $billingCycleAnchor = null;
 
     /**
      * Get the user that owns the subscription.
@@ -157,6 +172,35 @@ class Subscription extends Model
     }
 
     /**
+     * Indicate that the plan change should not be prorated.
+     *
+     * @return $this
+     */
+    public function noProrate()
+    {
+        $this->prorate = false;
+
+        return $this;
+    }
+
+    /**
+     * Change the billing cycle anchor on a plan change.
+     *
+     * @param  int|string  $date
+     * @return $this
+     */
+    public function anchorBillingCycleOn($date = 'now')
+    {
+        if ($date instanceof DateTimeInterface) {
+            $date = $date->getTimestamp();
+        }
+
+        $this->billingCycleAnchor = $date;
+
+        return $this;
+    }
+
+    /**
      * Swap the subscription to a new Stripe plan.
      *
      * @param  string  $plan
@@ -167,6 +211,12 @@ class Subscription extends Model
         $subscription = $this->asStripeSubscription();
 
         $subscription->plan = $plan;
+
+        $subscription->prorate = $this->prorate;
+
+        if (! is_null($this->billingCycleAnchor)) {
+            $subscription->billingCycleAnchor = $this->billingCycleAnchor;
+        }
 
         // If no specific trial end date has been set, the default behavior should be
         // to maintain the current trial state, whether that is "active" or to run

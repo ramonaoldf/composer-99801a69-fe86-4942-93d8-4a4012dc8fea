@@ -1,6 +1,6 @@
 {
     "name": "presttec\/laravel-cashier",
-    "description": "",
+    "description": "Laravel Cashier provides an expressive, fluent interface to Stripe's subscription billing services.",
     "keywords": [
         "laravel",
         "stripe",
@@ -15,15 +15,15 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "presttec\/illuminate-filesystem": "~4.1",
-        "presttec\/illuminate-support": "~4.1",
+        "presttec\/illuminate-filesystem": "~5.0",
+        "presttec\/illuminate-support": "~5.0",
         "presttec\/carbon": "~1.0",
         "presttec\/stripe-php": "~1.9",
         "presttec\/http-kernel": "~2.3"
     },
     "require-dev": {
-        "presttec\/illuminate-routing": "~4.1",
-        "presttec\/illuminate-view": "~4.1",
+        "presttec\/illuminate-routing": "~5.0",
+        "presttec\/illuminate-view": "~5.0",
         "presttec\/mockery": "~0.9",
         "presttec\/phpunit": "~4.0"
     },
@@ -34,9 +34,10 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0-dev"
+            "dev-master": "3.0-dev"
         }
     },
+    "minimum-stability": "dev",
     "replaces": {
         "laravel\/cashier": "*"
     },

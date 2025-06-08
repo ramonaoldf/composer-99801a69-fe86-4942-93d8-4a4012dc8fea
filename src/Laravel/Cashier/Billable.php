@@ -488,6 +488,16 @@ trait Billable
     }
 
     /**
+     * Get the tax percentage to apply to the subscription.
+     *
+     * @return mixed
+     */
+    public function getTaxPercent()
+    {
+        //
+    }
+
+    /**
      * Format the given currency for display, without the currency symbol.
      *
      * @param  int  $amount

@@ -87,7 +87,7 @@ class StripeGateway
     public function charge($amount, array $options = [])
     {
         $options = array_merge([
-            'currency' => 'usd',
+            'currency' => $this->getCurrency(),
         ], $options);
 
         $options['amount'] = $amount;
@@ -152,6 +152,7 @@ class StripeGateway
         $payload = [
             'plan' => $this->plan, 'prorate' => $this->prorate,
             'quantity' => $this->quantity, 'trial_end' => $this->getTrialEndForUpdate(),
+            'tax_percent' => $this->billable->getTaxPercent(),
         ];
 
         return $payload;

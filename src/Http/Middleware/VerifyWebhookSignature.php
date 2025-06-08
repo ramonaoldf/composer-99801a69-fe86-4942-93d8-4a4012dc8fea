@@ -3,10 +3,10 @@
 namespace Laravel\Cashier\Http\Middleware;
 
 use Closure;
-use Illuminate\Contracts\Config\Repository as Config;
-use Illuminate\Contracts\Foundation\Application;
-use Stripe\Error\SignatureVerification;
 use Stripe\WebhookSignature;
+use Stripe\Error\SignatureVerification;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Config\Repository as Config;
 
 class VerifyWebhookSignature
 {
@@ -50,8 +50,8 @@ class VerifyWebhookSignature
             WebhookSignature::verifyHeader(
                 $request->getContent(),
                 $request->header('Stripe-Signature'),
-                $this->config->get('services.stripe.webhook.secret'),
-                $this->config->get('services.stripe.webhook.tolerance')
+                $this->config->get('cashier.webhook.secret'),
+                $this->config->get('cashier.webhook.tolerance')
             );
         } catch (SignatureVerification $exception) {
             $this->app->abort(403);

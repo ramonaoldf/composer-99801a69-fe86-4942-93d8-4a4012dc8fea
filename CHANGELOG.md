@@ -1,12 +1,43 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v9.3.6...9.0)
+## [Unreleased](https://github.com/laravel/cashier/compare/v10.0.0...master)
 
 
-## [v9.3.6 (2020-03-24)](https://github.com/laravel/cashier/compare/v9.3.5...v9.3.6)
+## [v10.0.0 (2019-08-13)](https://github.com/laravel/cashier/compare/v10.0.0-beta.2...v10.0.0)
+
+### Added
+- Allow hasCompletePayment() to check other subscriptions than “default” ([#733](https://github.com/laravel/cashier/pull/733))
+- Add indexes to those columns used to lookup data in the database ([#739](https://github.com/laravel/cashier/pull/739))
 
 ### Fixed
-- Add X-Vapor-Base64-Encode header ([#897](https://github.com/laravel/cashier/pull/897))
+- Fixed a label with an incorrect for attribute ([#732](https://github.com/laravel/cashier/pull/732))
+
+
+## [v10.0.0-beta.2 (2019-08-02)](https://github.com/laravel/cashier/compare/v10.0.0-beta...v10.0.0-beta.2)
+
+### Added
+- Add latestPayment method on Subscription ([#705](https://github.com/laravel/cashier/pull/705))
+- Allow custom filename for invoice download ([#723](https://github.com/laravel/cashier/pull/723))
+
+### Changed
+- Improve stripe statuses ([#707](https://github.com/laravel/cashier/pull/707))
+- Refactor active subscription state ([#712](https://github.com/laravel/cashier/pull/712))
+- Return invoice object when applicable ([#711](https://github.com/laravel/cashier/pull/711))
+- Refactor webhook responses ([#722](https://github.com/laravel/cashier/pull/722))
+- Refactor confirm payment mail to notification ([#727](https://github.com/laravel/cashier/pull/727))
+
+### Fixed
+- Fix createSetupIntent ([#704](https://github.com/laravel/cashier/pull/704))
+- Fix subscription invoicing ([#710](https://github.com/laravel/cashier/pull/710))
+- Fix `null` return for `latestPayment` method ([#730](https://github.com/laravel/cashier/pull/730))
+
+### Removed
+- Remove unused `$customer` parameter on `updateQuantity` method ([#729](https://github.com/laravel/cashier/pull/729))
+
+
+## [v10.0.0-beta (2019-07-17)](https://github.com/laravel/cashier/compare/v9.3.5...v10.0.0-beta)
+
+Cashier 10.0 is a major release. Please review [the upgrade guide](UPGRADE.md) thoroughly.
 
 
 ## [v9.3.5 (2019-07-30)](https://github.com/laravel/cashier/compare/v9.3.4...v9.3.5)

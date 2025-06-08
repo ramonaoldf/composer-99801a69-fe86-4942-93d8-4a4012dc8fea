@@ -7,6 +7,10 @@
         "billing"
     ],
     "license": "MIT",
+    "support": {
+        "issues": "https:\/\/github.com\/presttec\/laravel-cashier\/issues",
+        "source": "https:\/\/github.com\/presttec\/laravel-cashier"
+    },
     "authors": [
         {
             "name": "Ramon Oliveira",
@@ -15,19 +19,19 @@
     ],
     "require": {
         "php": ">=5.5.9",
+        "presttec\/dompdf": "^0.8.0",
         "presttec\/illuminate-database": "~5.3",
         "presttec\/illuminate-support": "~5.3",
-        "presttec\/dompdf": "^0.8.0",
         "presttec\/carbon": "~1.0",
-        "presttec\/stripe-php": "~4.0",
+        "presttec\/stripe-php": "~5.0",
         "presttec\/http-kernel": "~2.7|~3.0"
     },
     "require-dev": {
-        "presttec\/illuminate-routing": "~5.3",
         "presttec\/illuminate-http": "~5.3",
+        "presttec\/illuminate-routing": "~5.3",
         "presttec\/illuminate-view": "~5.3",
-        "presttec\/mockery": "~0.9",
-        "presttec\/phpunit": "~4.0",
+        "presttec\/mockery": "~1.0",
+        "presttec\/phpunit": "~5.0",
         "presttec\/phpdotenv": "~2.0"
     },
     "autoload": {
@@ -49,6 +53,9 @@
                 "Laravel\\Cashier\\CashierServiceProvider"
             ]
         }
+    },
+    "config": {
+        "sort-packages": true
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

@@ -18,17 +18,17 @@
         }
     ],
     "require": {
-        "php": "^7.1.3",
+        "php": "^7.2",
         "ext-json": "*",
         "presttec\/dompdf": "^0.8.0",
-        "presttec\/illuminate-contracts": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-database": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-http": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-log": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-notifications": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-routing": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-support": "~5.8.0|^6.0|^7.0",
-        "presttec\/illuminate-view": "~5.8.0|^6.0|^7.0",
+        "presttec\/illuminate-contracts": "^6.0|^7.0",
+        "presttec\/illuminate-database": "^6.0|^7.0",
+        "presttec\/illuminate-http": "^6.0|^7.0",
+        "presttec\/illuminate-log": "^6.0|^7.0",
+        "presttec\/illuminate-notifications": "^6.0|^7.0",
+        "presttec\/illuminate-routing": "^6.0|^7.0",
+        "presttec\/illuminate-support": "^6.0|^7.0",
+        "presttec\/illuminate-view": "^6.0|^7.0",
         "presttec\/money": "^3.2",
         "presttec\/carbon": "^2.0",
         "presttec\/stripe-php": "^7.0",
@@ -37,8 +37,8 @@
     },
     "require-dev": {
         "presttec\/mockery": "^1.0",
-        "presttec\/testbench": "^3.8|^4.0|^5.0",
-        "presttec\/phpunit": "^7.5|^8.0"
+        "presttec\/testbench": "^4.0|^5.0",
+        "presttec\/phpunit": "^8.0|^9.0"
     },
     "suggest": {
         "ext-intl": "Allows for more locales besides the default \"en\" when formatting money values."
@@ -55,7 +55,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "10.x-dev"
+            "dev-master": "11.x-dev"
         },
         "laravel": {
             "providers": [

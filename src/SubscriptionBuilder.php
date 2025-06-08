@@ -228,14 +228,14 @@ class SubscriptionBuilder
      */
     protected function getStripeCustomer($token = null, array $options = [])
     {
-        if (! $this->owner->stripe_id) {
-            $customer = $this->owner->createAsStripeCustomer($token, $options);
-        } else {
+        if ($this->owner->stripe_id) {
             $customer = $this->owner->asStripeCustomer();
+        } else {
+            $customer = $this->owner->createAsStripeCustomer($options);
+        }
 
-            if ($token) {
-                $this->owner->updateCard($token);
-            }
+        if ($token) {
+            $this->owner->updateCard($token);
         }
 
         return $customer;
@@ -278,7 +278,7 @@ class SubscriptionBuilder
     /**
      * Get the tax percentage for the Stripe payload.
      *
-     * @return int|null
+     * @return int|float|null
      */
     protected function getTaxPercentageForPayload()
     {

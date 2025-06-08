@@ -32,7 +32,6 @@ trait Billable
      * @param  int  $amount
      * @param  array  $options
      * @return \Stripe\Charge
-     *
      * @throws \InvalidArgumentException
      */
     public function charge($amount, array $options = [])
@@ -60,7 +59,6 @@ trait Billable
      * @param  string  $charge
      * @param  array  $options
      * @return \Stripe\Refund
-     *
      * @throws \InvalidArgumentException
      */
     public function refund($charge, array $options = [])
@@ -87,7 +85,6 @@ trait Billable
      * @param  int  $amount
      * @param  array  $options
      * @return \Stripe\InvoiceItem
-     *
      * @throws \InvalidArgumentException
      */
     public function tab($description, $amount, array $options = [])
@@ -103,9 +100,7 @@ trait Billable
             'description' => $description,
         ], $options);
 
-        return StripeInvoiceItem::create(
-            $options, ['api_key' => $this->getStripeKey()]
-        );
+        return StripeInvoiceItem::create($options, ['api_key' => $this->getStripeKey()]);
     }
 
     /**
@@ -113,14 +108,15 @@ trait Billable
      *
      * @param  string  $description
      * @param  int  $amount
-     * @param  array  $options
+     * @param  array  $tabOptions
+     * @param  array  $invoiceOptions
      * @return \Laravel\Cashier\Invoice|bool
      */
-    public function invoiceFor($description, $amount, array $options = [])
+    public function invoiceFor($description, $amount, array $tabOptions = [], array $invoiceOptions = [])
     {
-        $this->tab($description, $amount, $options);
+        $this->tab($description, $amount, $tabOptions);
 
-        return $this->invoice();
+        return $this->invoice($invoiceOptions);
     }
 
     /**
@@ -201,8 +197,7 @@ trait Billable
     {
         return $this->subscriptions->sortByDesc(function ($value) {
             return $value->created_at->getTimestamp();
-        })
-        ->first(function ($value) use ($subscription) {
+        })->first(function ($value) use ($subscription) {
             return $value->name === $subscription;
         });
     }
@@ -220,13 +215,16 @@ trait Billable
     /**
      * Invoice the billable entity outside of regular billing cycle.
      *
+     * @param  array  $options
      * @return \Stripe\Invoice|bool
      */
-    public function invoice()
+    public function invoice(array $options = [])
     {
         if ($this->stripe_id) {
+            $parameters = array_merge($options, ['customer' => $this->stripe_id]);
+
             try {
-                return StripeInvoice::create(['customer' => $this->stripe_id], $this->getStripeKey())->pay();
+                return StripeInvoice::create($parameters, $this->getStripeKey())->pay();
             } catch (StripeErrorInvalidRequest $e) {
                 return false;
             }
@@ -546,14 +544,14 @@ trait Billable
     /**
      * Create a Stripe customer for the given Stripe model.
      *
-     * @param  string  $token
      * @param  array  $options
      * @return \Stripe\Customer
      */
-    public function createAsStripeCustomer($token, array $options = [])
+    public function createAsStripeCustomer(array $options = [])
     {
         $options = array_key_exists('email', $options)
-                ? $options : array_merge($options, ['email' => $this->email]);
+                ? $options
+                : array_merge($options, ['email' => $this->email]);
 
         // Here we will create the customer instance on Stripe and store the ID of the
         // user from Stripe. This ID will correspond with the Stripe user instances
@@ -565,13 +563,6 @@ trait Billable
         $this->stripe_id = $customer->id;
 
         $this->save();
-
-        // Next we will add the credit card to the user's account on Stripe using this
-        // token that was provided to this method. This will allow us to bill users
-        // when they subscribe to plans or we need to do one-off charges on them.
-        if (! is_null($token)) {
-            $this->updateCard($token);
-        }
 
         return $customer;
     }
@@ -599,7 +590,7 @@ trait Billable
     /**
      * Get the tax percentage to apply to the subscription.
      *
-     * @return int
+     * @return int|float
      */
     public function taxPercentage()
     {

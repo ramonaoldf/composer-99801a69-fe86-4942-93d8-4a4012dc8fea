@@ -33,7 +33,7 @@ class CashierTableCommand extends Command {
 
 		$this->info('Migration created successfully!');
 
-		$this->call('dump-autoload');
+		$this->laravel['composer']->dumpAutoloads();
 	}
 
 	/**
@@ -45,7 +45,7 @@ class CashierTableCommand extends Command {
 	{
 		$name = 'add_cashier_columns';
 
-		$path = $this->laravel['path'].'/database/migrations';
+		$path = $this->laravel['path.database'].'/migrations';
 
 		return $this->laravel['migration.creator']->create($name, $path);
 	}

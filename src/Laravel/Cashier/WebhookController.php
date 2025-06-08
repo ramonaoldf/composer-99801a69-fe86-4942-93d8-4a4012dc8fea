@@ -1,7 +1,5 @@
 <?php namespace Laravel\Cashier;
 
-use Exception;
-use Stripe_Event;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Request;
@@ -19,11 +17,6 @@ class WebhookController extends Controller {
 	{
 		$payload = $this->getJsonPayload();
 
-		if ( ! $this->eventExistsOnStripe($payload['id']))
-		{
-			return;
-		}
-
 		$method = 'handle'.studly_case(str_replace('.', '_', $payload['type']));
 
 		if (method_exists($this, $method))
@@ -33,24 +26,6 @@ class WebhookController extends Controller {
 		else
 		{
 			return $this->missingMethod();
-		}
-	}
-
-	/**
-	 * Verify with Stripe that the event is genuine.
-	 *
-	 * @param  string  $id
-	 * @return bool
-	 */
-	protected function eventExistsOnStripe($id)
-	{
-		try
-		{
-			return ! is_null(Stripe_Event::retrieve($id));
-		}
-		catch (Exception $e)
-		{
-			return false;
 		}
 	}
 
@@ -87,7 +62,7 @@ class WebhookController extends Controller {
 	 * Get the billable entity instance by Stripe ID.
 	 *
 	 * @param  string  $stripeId
-	 * @return \Laravel\Cashier\BillableInterface
+	 * @return \Laravel\Cashier\Contracts\Billable
 	 */
 	protected function getBillable($stripeId)
 	{

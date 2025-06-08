@@ -22,9 +22,10 @@
         "presttec\/http-kernel": "~2.3"
     },
     "require-dev": {
+        "presttec\/illuminate-routing": "~4.1",
         "presttec\/illuminate-view": "~4.1",
-        "presttec\/mockery": "0.9.*",
-        "presttec\/phpunit": "4.0.*"
+        "presttec\/mockery": "~0.9",
+        "presttec\/phpunit": "~4.0"
     },
     "autoload": {
         "psr-0": {
@@ -33,7 +34,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0-dev"
+            "dev-master": "2.1-dev"
         }
     },
     "replaces": {

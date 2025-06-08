@@ -15,7 +15,7 @@ class Cashier
      *
      * @var string
      */
-    const VERSION = '10.6.0';
+    const VERSION = '10.7.0';
 
     /**
      * The Stripe API version.
@@ -56,7 +56,7 @@ class Cashier
      * Get the billable entity instance by Stripe ID.
      *
      * @param  string  $stripeId
-     * @return \Laravel\Cashier\Billable
+     * @return \Laravel\Cashier\Billable|null
      */
     public static function findBillable($stripeId)
     {

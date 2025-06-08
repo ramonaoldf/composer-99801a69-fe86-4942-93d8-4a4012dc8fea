@@ -29,6 +29,9 @@ trait Billable
      * @param  string  $paymentMethod
      * @param  array  $options
      * @return \Laravel\Cashier\Payment
+     *
+     * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
+     * @throws \Laravel\Cashier\Exceptions\PaymentFailure
      */
     public function charge($amount, $paymentMethod, array $options = [])
     {
@@ -99,6 +102,9 @@ trait Billable
      * @param  array  $tabOptions
      * @param  array  $invoiceOptions
      * @return \Laravel\Cashier\Invoice|bool
+     *
+     * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
+     * @throws \Laravel\Cashier\Exceptions\PaymentFailure
      */
     public function invoiceFor($description, $amount, array $tabOptions = [], array $invoiceOptions = [])
     {
@@ -220,6 +226,9 @@ trait Billable
      *
      * @param  array  $options
      * @return \Laravel\Cashier\Invoice|bool
+     *
+     * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
+     * @throws \Laravel\Cashier\Exceptions\PaymentFailure
      */
     public function invoice(array $options = [])
     {
@@ -731,9 +740,9 @@ trait Billable
             throw InvalidStripeCustomer::exists($this);
         }
 
-        $options = array_key_exists('email', $options)
-                ? $options
-                : array_merge($options, ['email' => $this->email]);
+        if (! array_key_exists('email', $options) && $email = $this->stripeEmail()) {
+            $options['email'] = $email;
+        }
 
         // Here we will create the customer instance on Stripe and store the ID of the
         // user from Stripe. This ID will correspond with the Stripe user instances
@@ -787,6 +796,16 @@ trait Billable
         $this->assertCustomerExists();
 
         return StripeCustomer::retrieve($this->stripe_id, $this->stripeOptions());
+    }
+
+    /**
+     * Get the email address used to create the customer in Stripe.
+     *
+     * @return string|null
+     */
+    public function stripeEmail()
+    {
+        return $this->email;
     }
 
     /**

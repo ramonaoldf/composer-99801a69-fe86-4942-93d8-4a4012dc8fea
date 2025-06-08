@@ -3,6 +3,7 @@
 namespace Laravel\Cashier;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
 use Stripe\SubscriptionItem as StripeSubscriptionItem;
 
@@ -11,6 +12,7 @@ use Stripe\SubscriptionItem as StripeSubscriptionItem;
  */
 class SubscriptionItem extends Model
 {
+    use InteractsWithPaymentBehavior;
     use Prorates;
 
     /**
@@ -65,9 +67,9 @@ class SubscriptionItem extends Model
      */
     public function incrementAndInvoice($count = 1)
     {
-        $this->incrementQuantity($count);
+        $this->alwaysInvoice();
 
-        $this->subscription->invoice();
+        $this->incrementQuantity($count);
 
         return $this;
     }
@@ -103,6 +105,8 @@ class SubscriptionItem extends Model
 
         $stripeSubscriptionItem->quantity = $quantity;
 
+        $stripeSubscriptionItem->payment_behavior = $this->paymentBehavior();
+
         $stripeSubscriptionItem->proration_behavior = $this->prorateBehavior();
 
         $stripeSubscriptionItem->save();
@@ -136,6 +140,7 @@ class SubscriptionItem extends Model
         $options = array_merge([
             'plan' => $plan,
             'quantity' => $this->quantity,
+            'payment_behavior' => $this->paymentBehavior(),
             'proration_behavior' => $this->prorateBehavior(),
             'tax_rates' => $this->subscription->getPlanTaxRatesForPayload($plan),
         ], $options);
@@ -173,11 +178,9 @@ class SubscriptionItem extends Model
      */
     public function swapAndInvoice($plan, $options = [])
     {
-        $item = $this->swap($plan, $options);
+        $this->alwaysInvoice();
 
-        $this->subscription->invoice();
-
-        return $item;
+        return $this->swap($plan, $options);
     }
 
     /**
@@ -196,12 +199,14 @@ class SubscriptionItem extends Model
     /**
      * Get the subscription as a Stripe subscription item object.
      *
+     * @param  array  $expand
      * @return StripeSubscriptionItem
      */
-    public function asStripeSubscriptionItem()
+    public function asStripeSubscriptionItem(array $expand = [])
     {
         return StripeSubscriptionItem::retrieve(
-            $this->stripe_id, $this->subscription->owner->stripeOptions()
+            ['id' => $this->stripe_id, 'expand' => $expand],
+            $this->subscription->owner->stripeOptions()
         );
     }
 }

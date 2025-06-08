@@ -23,7 +23,7 @@
         "presttec\/dompdf": "^0.8.0",
         "presttec\/illuminate-database": "~5.7",
         "presttec\/illuminate-support": "~5.7",
-        "presttec\/carbon": "~1.0",
+        "presttec\/carbon": "^1.26.3 || ^2.0",
         "presttec\/stripe-php": "~6.0",
         "presttec\/http-kernel": "~4.0"
     },

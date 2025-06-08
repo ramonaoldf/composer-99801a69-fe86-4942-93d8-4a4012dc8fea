@@ -1,9 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cashier/compare/v9.2.0...9.0)
+## [Unreleased](https://github.com/laravel/cashier/compare/v9.2.1...9.0)
 
 
-## [v9.1.0 (2019-03-12)](https://github.com/laravel/cashier/compare/v9.1.0...v9.2.0)
+## [v9.2.1](https://github.com/laravel/cashier/compare/v9.2.0...v9.2.1)
+
+### Fixed
+- Use new created property on invoice ([4714ba4](https://github.com/laravel/cashier/commit/4714ba4ad909092a61bfe2d0704b3fce6070ed5b))
+
+
+## [v9.2.0 (2019-03-12)](https://github.com/laravel/cashier/compare/v9.1.0...v9.2.0)
 
 ### Added
 - Add subscription state scopes ([#609](https://github.com/laravel/cashier/pull/609))

@@ -3,10 +3,10 @@
 namespace Laravel\Cashier\Http\Controllers;
 
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Arr;
 use Laravel\Cashier\Cashier;
 use Laravel\Cashier\Http\Middleware\VerifyRedirectUrl;
 use Laravel\Cashier\Payment;
-use Stripe\PaymentIntent as StripePaymentIntent;
 
 class PaymentController extends Controller
 {
@@ -28,11 +28,22 @@ class PaymentController extends Controller
      */
     public function show($id)
     {
+        $payment = new Payment(Cashier::stripe()->paymentIntents->retrieve(
+            $id, ['expand' => ['payment_method']])
+        );
+
         return view('cashier::payment', [
             'stripeKey' => config('cashier.key'),
-            'payment' => new Payment(
-                StripePaymentIntent::retrieve($id, Cashier::stripeOptions())
-            ),
+            'amount' => $payment->amount(),
+            'payment' => $payment,
+            'paymentIntent' => Arr::only($payment->asStripePaymentIntent()->toArray(), [
+                'id', 'status', 'payment_method_types', 'client_secret',
+            ]),
+            'paymentMethod' => (string) request('source_type', optional($payment->payment_method)->type),
+            'errorMessage' => request('redirect_status') === 'failed'
+                ? 'Something went wrong when trying to confirm the payment. Please try again.'
+                : '',
+            'customer' => $payment->customer(),
             'redirect' => url(request('redirect', '/')),
         ]);
     }

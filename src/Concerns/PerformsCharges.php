@@ -2,19 +2,13 @@
 
 namespace Laravel\Cashier\Concerns;
 
+use Illuminate\Support\Collection;
 use Laravel\Cashier\Checkout;
 use Laravel\Cashier\Payment;
-use Stripe\PaymentIntent as StripePaymentIntent;
-use Stripe\Refund as StripeRefund;
 
 trait PerformsCharges
 {
-    /**
-     * Determines if user redeemable promotion codes are available in Stripe Checkout.
-     *
-     * @var bool
-     */
-    protected $allowPromotionCodes = false;
+    use AllowsCoupons;
 
     /**
      * Make a "one off" charge on the customer for the given amount.
@@ -24,8 +18,7 @@ trait PerformsCharges
      * @param  array  $options
      * @return \Laravel\Cashier\Payment
      *
-     * @throws \Laravel\Cashier\Exceptions\PaymentActionRequired
-     * @throws \Laravel\Cashier\Exceptions\PaymentFailure
+     * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      */
     public function charge($amount, $paymentMethod, array $options = [])
     {
@@ -43,7 +36,7 @@ trait PerformsCharges
         }
 
         $payment = new Payment(
-            StripePaymentIntent::create($options, $this->stripeOptions())
+            $this->stripe()->paymentIntents->create($options)
         );
 
         $payment->validate();
@@ -60,9 +53,8 @@ trait PerformsCharges
      */
     public function refund($paymentIntent, array $options = [])
     {
-        return StripeRefund::create(
-            ['payment_intent' => $paymentIntent] + $options,
-            $this->stripeOptions()
+        return $this->stripe()->refunds->create(
+            ['payment_intent' => $paymentIntent] + $options
         );
     }
 
@@ -77,22 +69,23 @@ trait PerformsCharges
      */
     public function checkout($items, array $sessionOptions = [], array $customerOptions = [])
     {
-        $items = collect((array) $items)->map(function ($item, $key) {
-            if (is_string($key)) {
-                return ['price' => $key, 'quantity' => $item];
-            }
-
-            $item = is_string($item) ? ['price' => $item] : $item;
-
-            $item['quantity'] = $item['quantity'] ?? 1;
-
-            return $item;
-        })->values()->all();
-
-        return Checkout::create($this, array_merge([
+        $payload = array_filter([
             'allow_promotion_codes' => $this->allowPromotionCodes,
-            'line_items' => $items,
-        ], $sessionOptions), $customerOptions);
+            'discounts' => $this->checkoutDiscounts(),
+            'line_items' => Collection::make((array) $items)->map(function ($item, $key) {
+                if (is_string($key)) {
+                    return ['price' => $key, 'quantity' => $item];
+                }
+
+                $item = is_string($item) ? ['price' => $item] : $item;
+
+                $item['quantity'] = $item['quantity'] ?? 1;
+
+                return $item;
+            })->values()->all(),
+        ]);
+
+        return Checkout::create($this, array_merge($payload, $sessionOptions), $customerOptions);
     }
 
     /**
@@ -117,17 +110,5 @@ trait PerformsCharges
             ],
             'quantity' => $quantity,
         ]], $sessionOptions, $customerOptions);
-    }
-
-    /**
-     * Enables user redeemable promotion codes.
-     *
-     * @return $this
-     */
-    public function allowPromotionCodes()
-    {
-        $this->allowPromotionCodes = true;
-
-        return $this;
     }
 }

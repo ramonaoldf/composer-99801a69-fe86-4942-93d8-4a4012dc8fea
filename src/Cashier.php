@@ -7,6 +7,8 @@ use Money\Currency;
 use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
 use NumberFormatter;
+use Stripe\Customer as StripeCustomer;
+use Stripe\StripeClient;
 
 class Cashier
 {
@@ -15,14 +17,14 @@ class Cashier
      *
      * @var string
      */
-    const VERSION = '12.17.2';
+    const VERSION = '13.0.0';
 
     /**
      * The Stripe API version.
      *
      * @var string
      */
-    const STRIPE_VERSION = '2020-03-02';
+    const STRIPE_VERSION = '2020-08-27';
 
     /**
      * The custom currency formatter.
@@ -53,6 +55,13 @@ class Cashier
     public static $deactivatePastDue = true;
 
     /**
+     * The default customer model class name.
+     *
+     * @var string
+     */
+    public static $customerModel = 'App\\Models\\User';
+
+    /**
      * The subscription model class name.
      *
      * @var string
@@ -67,34 +76,30 @@ class Cashier
     public static $subscriptionItemModel = SubscriptionItem::class;
 
     /**
-     * Get the customer instance by Stripe ID.
+     * Get the customer instance by its Stripe ID.
      *
-     * @param  string  $stripeId
+     * @param  \Stripe\Customer|string|null  $stripeId
      * @return \Laravel\Cashier\Billable|null
      */
     public static function findBillable($stripeId)
     {
-        if ($stripeId === null) {
-            return;
-        }
+        $stripeId = $stripeId instanceof StripeCustomer ? $stripeId->id : $stripeId;
 
-        $model = config('cashier.model');
-
-        return (new $model)->where('stripe_id', $stripeId)->first();
+        return $stripeId ? (new static::$customerModel)->where('stripe_id', $stripeId)->first() : null;
     }
 
     /**
-     * Get the default Stripe API options.
+     * Get the Stripe SDK client.
      *
      * @param  array  $options
-     * @return array
+     * @return \Stripe\StripeClient
      */
-    public static function stripeOptions(array $options = [])
+    public static function stripe(array $options = [])
     {
-        return array_merge([
-            'api_key' => config('cashier.secret'),
+        return new StripeClient(array_merge([
+            'api_key' => $options['api_key'] ?? config('cashier.secret'),
             'stripe_version' => static::STRIPE_VERSION,
-        ], $options);
+        ], $options));
     }
 
     /**
@@ -166,6 +171,17 @@ class Cashier
         static::$deactivatePastDue = false;
 
         return new static;
+    }
+
+    /**
+     * Set the customer model class name.
+     *
+     * @param  string  $customerModel
+     * @return void
+     */
+    public static function useCustomerModel($customerModel)
+    {
+        static::$customerModel = $customerModel;
     }
 
     /**

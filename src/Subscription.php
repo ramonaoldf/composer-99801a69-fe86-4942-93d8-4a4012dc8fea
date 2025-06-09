@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 use Laravel\Cashier\Concerns\AllowsCoupons;
+use Laravel\Cashier\Concerns\HandlesPaymentFailures;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
 use Laravel\Cashier\Database\Factories\SubscriptionFactory;
@@ -24,6 +25,7 @@ use Stripe\Subscription as StripeSubscription;
 class Subscription extends Model
 {
     use AllowsCoupons;
+    use HandlesPaymentFailures;
     use HasFactory;
     use InteractsWithPaymentBehavior;
     use Prorates;
@@ -49,8 +51,18 @@ class Subscription extends Model
      */
     protected $casts = [
         'quantity' => 'integer',
-        'ends_at' => 'datetime',
-        'trial_ends_at' => 'datetime',
+    ];
+
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'created_at',
+        'ends_at',
+        'trial_ends_at',
+        'updated_at',
     ];
 
     /**
@@ -289,18 +301,6 @@ class Subscription extends Model
     }
 
     /**
-     * Determine if the subscription is no longer active.
-     *
-     * @return bool
-     *
-     * @deprecated Use canceled instead.
-     */
-    public function cancelled()
-    {
-        return $this->canceled();
-    }
-
-    /**
      * Filter query by canceled.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -312,19 +312,6 @@ class Subscription extends Model
     }
 
     /**
-     * Filter query by canceled.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return void
-     *
-     * @deprecated Use scopeCanceled instead.
-     */
-    public function scopeCancelled($query)
-    {
-        $this->scopeCanceled($query);
-    }
-
-    /**
      * Filter query by not canceled.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
@@ -333,19 +320,6 @@ class Subscription extends Model
     public function scopeNotCanceled($query)
     {
         $query->whereNull('ends_at');
-    }
-
-    /**
-     * Filter query by not canceled.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return void
-     *
-     * @deprecated Use scopeNotCanceled instead.
-     */
-    public function scopeNotCancelled($query)
-    {
-        $this->scopeNotCanceled($query);
     }
 
     /**
@@ -554,11 +528,7 @@ class Subscription extends Model
             'quantity' => $stripeSubscription->quantity,
         ])->save();
 
-        if ($this->hasIncompletePayment()) {
-            (new Payment(
-                $stripeSubscription->latest_invoice->payment_intent
-            ))->validate();
-        }
+        $this->handlePaymentFailure($this);
 
         return $this;
     }
@@ -706,6 +676,7 @@ class Subscription extends Model
      * @param  array  $options
      * @return $this
      *
+     * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
     public function swap($prices, array $options = [])
@@ -750,11 +721,7 @@ class Subscription extends Model
 
         $this->unsetRelation('items');
 
-        if ($this->hasIncompletePayment()) {
-            (new Payment(
-                $stripeSubscription->latest_invoice->payment_intent
-            ))->validate();
-        }
+        $this->handlePaymentFailure($this);
 
         return $this;
     }
@@ -904,12 +871,20 @@ class Subscription extends Model
 
         $this->unsetRelation('items');
 
+        $stripeSubscription = $this->asStripeSubscription();
+
         if ($this->hasSinglePrice()) {
             $this->fill([
                 'stripe_price' => null,
                 'quantity' => null,
-            ])->save();
+            ]);
         }
+
+        $this->fill([
+            'stripe_status' => $stripeSubscription->status,
+        ])->save();
+
+        $this->handlePaymentFailure($this);
 
         return $this;
     }
@@ -1102,20 +1077,6 @@ class Subscription extends Model
     }
 
     /**
-     * Mark the subscription as canceled.
-     *
-     * @return void
-     *
-     * @deprecated Use markAsCanceled instead.
-     *
-     * @internal
-     */
-    public function markAsCancelled()
-    {
-        $this->markAsCanceled();
-    }
-
-    /**
      * Resume the canceled subscription.
      *
      * @return $this
@@ -1158,7 +1119,7 @@ class Subscription extends Model
      * Invoice the subscription outside of the regular billing cycle.
      *
      * @param  array  $options
-     * @return \Laravel\Cashier\Invoice|bool
+     * @return \Laravel\Cashier\Invoice
      *
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      */

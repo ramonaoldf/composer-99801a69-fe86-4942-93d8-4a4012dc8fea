@@ -300,7 +300,7 @@
                     </tr>
 
                     <!-- Applied Balance -->
-                    @if ($invoice->rawAppliedBalance() > 0)
+                    @if ($invoice->hasEndingBalance())
                         <tr>
                             <td colspan="{{ $invoice->hasTax() ? 3 : 2 }}" style="text-align: right;">
                                 Applied balance

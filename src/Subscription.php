@@ -50,19 +50,9 @@ class Subscription extends Model
      * @var array
      */
     protected $casts = [
+        'ends_at' => 'datetime',
         'quantity' => 'integer',
-    ];
-
-    /**
-     * The attributes that should be mutated to dates.
-     *
-     * @var array
-     */
-    protected $dates = [
-        'created_at',
-        'ends_at',
-        'trial_ends_at',
-        'updated_at',
+        'trial_ends_at' => 'datetime',
     ];
 
     /**
@@ -227,7 +217,7 @@ class Subscription extends Model
     public function active()
     {
         return ! $this->ended() &&
-            $this->stripe_status !== StripeSubscription::STATUS_INCOMPLETE &&
+            (! Cashier::$deactivateIncomplete || $this->stripe_status !== StripeSubscription::STATUS_INCOMPLETE) &&
             $this->stripe_status !== StripeSubscription::STATUS_INCOMPLETE_EXPIRED &&
             (! Cashier::$deactivatePastDue || $this->stripe_status !== StripeSubscription::STATUS_PAST_DUE) &&
             $this->stripe_status !== StripeSubscription::STATUS_UNPAID;
@@ -246,12 +236,15 @@ class Subscription extends Model
                 ->orWhere(function ($query) {
                     $query->onGracePeriod();
                 });
-        })->where('stripe_status', '!=', StripeSubscription::STATUS_INCOMPLETE)
-            ->where('stripe_status', '!=', StripeSubscription::STATUS_INCOMPLETE_EXPIRED)
+        })->where('stripe_status', '!=', StripeSubscription::STATUS_INCOMPLETE_EXPIRED)
             ->where('stripe_status', '!=', StripeSubscription::STATUS_UNPAID);
 
         if (Cashier::$deactivatePastDue) {
             $query->where('stripe_status', '!=', StripeSubscription::STATUS_PAST_DUE);
+        }
+
+        if (Cashier::$deactivateIncomplete) {
+            $query->where('stripe_status', '!=', StripeSubscription::STATUS_INCOMPLETE);
         }
     }
 

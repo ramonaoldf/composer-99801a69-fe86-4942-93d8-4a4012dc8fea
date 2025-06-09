@@ -15,7 +15,7 @@ class Cashier
      *
      * @var string
      */
-    const VERSION = '12.9.0';
+    const VERSION = '12.9.1';
 
     /**
      * The Stripe API version.
@@ -51,6 +51,20 @@ class Cashier
      * @var bool
      */
     public static $deactivatePastDue = true;
+
+    /**
+     * The subscription model class name.
+     *
+     * @var string
+     */
+    public static $subscriptionModel = Subscription::class;
+
+    /**
+     * The subscription item model class name.
+     *
+     * @var string
+     */
+    public static $subscriptionItemModel = SubscriptionItem::class;
 
     /**
      * Get the billable entity instance by Stripe ID.
@@ -152,5 +166,27 @@ class Cashier
         static::$deactivatePastDue = false;
 
         return new static;
+    }
+
+    /**
+     * Set the subscription model class name.
+     *
+     * @param  string  $subscriptionModel
+     * @return void
+     */
+    public static function useSubscriptionModel($subscriptionModel)
+    {
+        static::$subscriptionModel = $subscriptionModel;
+    }
+
+    /**
+     * Set the subscription item model class name.
+     *
+     * @param  string  $subscriptionItemModel
+     * @return void
+     */
+    public static function useSubscriptionItemModel($subscriptionItemModel)
+    {
+        static::$subscriptionItemModel = $subscriptionItemModel;
     }
 }

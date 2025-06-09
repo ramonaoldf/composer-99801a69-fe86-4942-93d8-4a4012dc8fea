@@ -18,7 +18,7 @@ class Cashier
      *
      * @var string
      */
-    const VERSION = '13.8.4';
+    const VERSION = '13.8.5';
 
     /**
      * The Stripe API version.
@@ -140,7 +140,7 @@ class Cashier
     public static function formatAmount($amount, $currency = null, $locale = null)
     {
         if (static::$formatCurrencyUsing) {
-            return call_user_func(static::$formatCurrencyUsing, $amount, $currency);
+            return call_user_func(static::$formatCurrencyUsing, $amount, $currency, $locale);
         }
 
         $money = new Money($amount, new Currency(strtoupper($currency ?? config('cashier.currency'))));

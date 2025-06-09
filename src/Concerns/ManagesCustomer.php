@@ -83,6 +83,10 @@ trait ManagesCustomer
             $options['preferred_locales'] = $locales;
         }
 
+        if (! array_key_exists('metadata', $options) && $metadata = $this->stripeMetadata()) {
+            $options['metadata'] = $metadata;
+        }
+
         // Here we will create the customer instance on Stripe and store the ID of the
         // user from Stripe. This ID will correspond with the Stripe user instances
         // and allow us to retrieve users from Stripe later when we need to work.
@@ -117,7 +121,7 @@ trait ManagesCustomer
     public function createOrGetStripeCustomer(array $options = [])
     {
         if ($this->hasStripeId()) {
-            return $this->asStripeCustomer();
+            return $this->asStripeCustomer($options['expand'] ?? []);
         }
 
         return $this->createAsStripeCustomer($options);
@@ -196,6 +200,16 @@ trait ManagesCustomer
     }
 
     /**
+     * Get the metadata that should be synced to Stripe.
+     *
+     * @return array|null
+     */
+    public function stripeMetadata()
+    {
+        // return [];
+    }
+
+    /**
      * Sync the customer's information to Stripe.
      *
      * @return \Stripe\Customer
@@ -208,6 +222,7 @@ trait ManagesCustomer
             'phone' => $this->stripePhone(),
             'address' => $this->stripeAddress(),
             'preferred_locales' => $this->stripePreferredLocales(),
+            'metadata' => $this->stripeMetadata(),
         ]);
     }
 

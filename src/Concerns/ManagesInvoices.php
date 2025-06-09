@@ -57,7 +57,7 @@ trait ManagesInvoices
      * @param  int  $amount
      * @param  array  $tabOptions
      * @param  array  $invoiceOptions
-     * @return \Laravel\Cashier\Invoice|bool
+     * @return \Laravel\Cashier\Invoice
      *
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      */
@@ -96,7 +96,7 @@ trait ManagesInvoices
      * @param  int  $quantity
      * @param  array  $tabOptions
      * @param  array  $invoiceOptions
-     * @return \Laravel\Cashier\Invoice|bool
+     * @return \Laravel\Cashier\Invoice
      *
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      */
@@ -111,7 +111,7 @@ trait ManagesInvoices
      * Invoice the customer outside of the regular billing cycle.
      *
      * @param  array  $options
-     * @return \Laravel\Cashier\Invoice|bool
+     * @return \Laravel\Cashier\Invoice
      *
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      */
@@ -119,13 +119,11 @@ trait ManagesInvoices
     {
         try {
             $invoice = $this->createInvoice(array_merge([
-                'pending_invoice_items_behavior' => 'include_and_require',
+                'pending_invoice_items_behavior' => 'include',
             ], $options));
 
             return $invoice->chargesAutomatically() ? $invoice->pay() : $invoice->send();
-        } catch (StripeInvalidRequestException $exception) {
-            return false;
-        } catch (StripeCardException $exception) {
+        } catch (StripeCardException) {
             $payment = new Payment(
                 $this->stripe()->paymentIntents->retrieve(
                     $invoice->asStripeInvoice()->refresh()->payment_intent,
@@ -150,7 +148,6 @@ trait ManagesInvoices
         $parameters = array_merge([
             'automatic_tax' => $this->automaticTaxPayload(),
             'customer' => $this->stripe_id,
-            'pending_invoice_items_behavior' => 'exclude',
         ], $options);
 
         $stripeInvoice = $this->stripe()->invoices->create($parameters);
@@ -235,7 +232,7 @@ trait ManagesInvoices
      * @param  string  $filename
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function downloadInvoice($id, array $data, $filename = null)
+    public function downloadInvoice($id, array $data = [], $filename = null)
     {
         $invoice = $this->findInvoiceOrFail($id);
 

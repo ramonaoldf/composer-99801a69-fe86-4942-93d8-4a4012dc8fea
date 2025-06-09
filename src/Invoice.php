@@ -7,6 +7,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use JsonSerializable;
 use Laravel\Cashier\Contracts\InvoiceRenderer;
 use Laravel\Cashier\Exceptions\InvalidInvoice;
@@ -435,7 +436,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Determine if the invoice will be charged automatically.
+     * Determine if the invoice will charge the customer automatically.
      *
      * @return bool
      */
@@ -445,7 +446,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
     }
 
     /**
-     * Determine if the invoice will be be sent by email.
+     * Determine if the invoice will send an invoice to the customer.
      *
      * @return bool
      */
@@ -754,7 +755,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * @param  array  $data
      * @return \Illuminate\Contracts\View\View
      */
-    public function view(array $data)
+    public function view(array $data = [])
     {
         return View::make('cashier::receipt', array_merge($data, [
             'invoice' => $this,
@@ -769,7 +770,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * @param  array  $data
      * @return string
      */
-    public function pdf(array $data)
+    public function pdf(array $data = [])
     {
         $options = config('cashier.invoices.options', []);
 
@@ -786,9 +787,10 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function download(array $data)
+    public function download(array $data = [])
     {
-        $filename = $data['product'].'_'.$this->date()->month.'_'.$this->date()->year;
+        $filename = $data['product'] ?? Str::slug(config('app.name'));
+        $filename .= '_'.$this->date()->month.'_'.$this->date()->year;
 
         return $this->downloadAs($filename, $data);
     }
@@ -800,7 +802,7 @@ class Invoice implements Arrayable, Jsonable, JsonSerializable
      * @param  array  $data
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function downloadAs($filename, array $data)
+    public function downloadAs($filename, array $data = [])
     {
         return new Response($this->pdf($data), 200, [
             'Content-Description' => 'File Transfer',

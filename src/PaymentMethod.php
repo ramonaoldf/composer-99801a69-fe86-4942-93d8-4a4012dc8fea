@@ -51,11 +51,11 @@ class PaymentMethod implements Arrayable, Jsonable, JsonSerializable
     /**
      * Delete the payment method.
      *
-     * @return \Stripe\PaymentMethod
+     * @return void
      */
     public function delete()
     {
-        return $this->owner->deletePaymentMethod($this->paymentMethod);
+        $this->owner->deletePaymentMethod($this->paymentMethod);
     }
 
     /**

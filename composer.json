@@ -32,7 +32,7 @@
         "presttec\/illuminate-view": "^8.37|^9.0",
         "presttec\/money": "^3.2|^4.0",
         "presttec\/carbon": "^2.0",
-        "presttec\/stripe-php": "^7.39",
+        "presttec\/stripe-php": "^7.39|^8.0",
         "presttec\/http-kernel": "^5.0|^6.0",
         "presttec\/polyfill-intl-icu": "^1.22.1"
     },

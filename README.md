@@ -2,9 +2,9 @@
 
 <p align="center">
 <a href="https://github.com/presttec/laravel-cashier/actions"><img src="https://github.com/presttec/laravel-cashier/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/presttec/laravel-cashier"><img src="https://poser.pugx.org/presttec/laravel-cashier/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/presttec/laravel-cashier"><img src="https://poser.pugx.org/presttec/laravel-cashier/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/presttec/laravel-cashier"><img src="https://poser.pugx.org/presttec/laravel-cashier/license.svg" alt="License"></a>
+<a href="https://packagist.org/packages/presttec/laravel-cashier"><img src="https://img.shields.io/packagist/dt/presttec/laravel-cashier" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/presttec/laravel-cashier"><img src="https://img.shields.io/packagist/v/presttec/laravel-cashier" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/presttec/laravel-cashier"><img src="https://img.shields.io/packagist/l/presttec/laravel-cashier" alt="License"></a>
 </p>
 
 ## Introduction

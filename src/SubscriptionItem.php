@@ -3,17 +3,19 @@
 namespace Laravel\Cashier;
 
 use DateTimeInterface;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Laravel\Cashier\Concerns\InteractsWithPaymentBehavior;
 use Laravel\Cashier\Concerns\Prorates;
-use Stripe\SubscriptionItem as StripeSubscriptionItem;
+use Laravel\Cashier\Database\Factories\SubscriptionItemFactory;
 
 /**
  * @property \Laravel\Cashier\Subscription|null $subscription
  */
 class SubscriptionItem extends Model
 {
+    use HasFactory;
     use InteractsWithPaymentBehavior;
     use Prorates;
 
@@ -103,86 +105,86 @@ class SubscriptionItem extends Model
     {
         $this->subscription->guardAgainstIncomplete();
 
-        $stripeSubscriptionItem = $this->asStripeSubscriptionItem();
+        $stripeSubscriptionItem = $this->updateStripeSubscriptionItem([
+            'payment_behavior' => $this->paymentBehavior(),
+            'proration_behavior' => $this->prorateBehavior(),
+            'quantity' => $quantity,
+        ]);
 
-        $stripeSubscriptionItem->quantity = $quantity;
+        $this->fill([
+            'quantity' => $quantity,
+        ])->save();
 
-        $stripeSubscriptionItem->payment_behavior = $this->paymentBehavior();
+        if ($this->subscription->hasSinglePrice()) {
+            $this->subscription->fill([
+                'stripe_status' => $stripeSubscriptionItem->subscription->status,
+                'quantity' => $quantity,
+            ])->save();
+        }
 
-        $stripeSubscriptionItem->proration_behavior = $this->prorateBehavior();
-
-        $stripeSubscriptionItem->save();
-
-        $this->quantity = $quantity;
-
-        $this->save();
-
-        if ($this->subscription->hasSinglePlan()) {
-            $this->subscription->quantity = $quantity;
-
-            $this->subscription->save();
+        if ($this->subscription->hasIncompletePayment()) {
+            optional($this->subscription->latestPayment())->validate();
         }
 
         return $this;
     }
 
     /**
-     * Swap the subscription item to a new Stripe plan.
+     * Swap the subscription item to a new Stripe price.
      *
-     * @param  string  $plan
+     * @param  string  $price
      * @param  array  $options
      * @return $this
      *
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function swap($plan, $options = [])
+    public function swap($price, array $options = [])
     {
         $this->subscription->guardAgainstIncomplete();
 
-        $options = array_merge([
-            'plan' => $plan,
+        $stripeSubscriptionItem = $this->updateStripeSubscriptionItem(array_merge([
+            'price' => $price,
             'quantity' => $this->quantity,
             'payment_behavior' => $this->paymentBehavior(),
             'proration_behavior' => $this->prorateBehavior(),
-            'tax_rates' => $this->subscription->getPlanTaxRatesForPayload($plan),
-        ], $options);
-
-        $item = StripeSubscriptionItem::update(
-            $this->stripe_id,
-            $options,
-            $this->subscription->owner->stripeOptions()
-        );
+            'tax_rates' => $this->subscription->getPriceTaxRatesForPayload($price),
+        ], $options));
 
         $this->fill([
-            'stripe_plan' => $plan,
-            'quantity' => $item->quantity,
+            'stripe_product' => $stripeSubscriptionItem->price->product,
+            'stripe_price' => $stripeSubscriptionItem->price->id,
+            'quantity' => $stripeSubscriptionItem->quantity,
         ])->save();
 
-        if ($this->subscription->hasSinglePlan()) {
+        if ($this->subscription->hasSinglePrice()) {
             $this->subscription->fill([
-                'stripe_plan' => $plan,
-                'quantity' => $item->quantity,
+                'stripe_price' => $price,
+                'quantity' => $stripeSubscriptionItem->quantity,
             ])->save();
+        }
+
+        if ($this->subscription->hasIncompletePayment()) {
+            optional($this->subscription->latestPayment())->validate();
         }
 
         return $this;
     }
 
     /**
-     * Swap the subscription item to a new Stripe plan, and invoice immediately.
+     * Swap the subscription item to a new Stripe price, and invoice immediately.
      *
-     * @param  string  $plan
+     * @param  string  $price
      * @param  array  $options
      * @return $this
      *
      * @throws \Laravel\Cashier\Exceptions\IncompletePayment
      * @throws \Laravel\Cashier\Exceptions\SubscriptionUpdateFailure
      */
-    public function swapAndInvoice($plan, $options = [])
+    public function swapAndInvoice($price, array $options = [])
     {
         $this->alwaysInvoice();
 
-        return $this->swap($plan, $options);
+        return $this->swap($price, $options);
     }
 
     /**
@@ -196,11 +198,11 @@ class SubscriptionItem extends Model
     {
         $timestamp = $timestamp instanceof DateTimeInterface ? $timestamp->getTimestamp() : $timestamp;
 
-        return StripeSubscriptionItem::createUsageRecord($this->stripe_id, [
+        return $this->subscription->owner->stripe()->subscriptionItems->createUsageRecord($this->stripe_id, [
             'quantity' => $quantity,
             'action' => $timestamp ? 'set' : 'increment',
             'timestamp' => $timestamp ?? time(),
-        ], $this->subscription->owner->stripeOptions());
+        ]);
     }
 
     /**
@@ -211,8 +213,8 @@ class SubscriptionItem extends Model
      */
     public function usageRecords($options = [])
     {
-        return new Collection(StripeSubscriptionItem::allUsageRecordSummaries(
-            $this->stripe_id, $options, $this->subscription->owner->stripeOptions()
+        return new Collection($this->subscription->owner->stripe()->subscriptionItems->allUsageRecordSummaries(
+            $this->stripe_id, $options
         )->data);
     }
 
@@ -224,8 +226,8 @@ class SubscriptionItem extends Model
      */
     public function updateStripeSubscriptionItem(array $options = [])
     {
-        return StripeSubscriptionItem::update(
-            $this->stripe_id, $options, $this->subscription->owner->stripeOptions()
+        return $this->subscription->owner->stripe()->subscriptionItems->update(
+            $this->stripe_id, $options
         );
     }
 
@@ -237,9 +239,18 @@ class SubscriptionItem extends Model
      */
     public function asStripeSubscriptionItem(array $expand = [])
     {
-        return StripeSubscriptionItem::retrieve(
-            ['id' => $this->stripe_id, 'expand' => $expand],
-            $this->subscription->owner->stripeOptions()
+        return $this->subscription->owner->stripe()->subscriptionItems->retrieve(
+            $this->stripe_id, ['expand' => $expand]
         );
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     */
+    public static function newFactory()
+    {
+        return SubscriptionItemFactory::new();
     }
 }

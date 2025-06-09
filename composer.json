@@ -18,35 +18,35 @@
         }
     ],
     "require": {
-        "php": "^7.2.5|^8.0",
+        "php": "^7.3|^8.0",
         "ext-json": "*",
-        "presttec\/dompdf": "^0.8.6|^1.0.1|^2.0",
-        "presttec\/illuminate-consoleilluminate-console": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-contracts": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-database": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-http": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-log": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-notifications": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-routing": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-support": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/illuminate-view": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/money": "^3.2|^4.0",
+        "presttec\/dompdf": "^0.8.6|^1.0.1",
+        "presttec\/illuminate-contracts": "^8.0",
+        "presttec\/illuminate-database": "^8.0",
+        "presttec\/illuminate-http": "^8.0",
+        "presttec\/illuminate-log": "^8.0",
+        "presttec\/illuminate-notifications": "^8.0",
+        "presttec\/illuminate-routing": "^8.0",
+        "presttec\/illuminate-support": "^8.0",
+        "presttec\/illuminate-view": "^8.0",
+        "presttec\/money": "^3.2",
         "presttec\/carbon": "^2.0",
         "presttec\/stripe-php": "^7.39",
-        "presttec\/http-kernel": "^4.3|^5.0|^6.0",
+        "presttec\/http-kernel": "^5.0",
         "presttec\/polyfill-intl-icu": "^1.22.1"
     },
     "require-dev": {
         "presttec\/mockery": "^1.0",
-        "presttec\/testbench": "^4.0|^5.0|^6.0|^7.0",
-        "presttec\/phpunit": "^8.0|^9.0"
+        "presttec\/testbench": "^6.0",
+        "presttec\/phpunit": "^9.0"
     },
     "suggest": {
         "ext-intl": "Allows for more locales besides the default \"en\" when formatting money values."
     },
     "autoload": {
         "psr-4": {
-            "Laravel\\Cashier\\": "src\/"
+            "Laravel\\Cashier\\": "src\/",
+            "Laravel\\Cashier\\Database\\Factories\\": "database\/factories\/"
         }
     },
     "autoload-dev": {
@@ -56,7 +56,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "12.x-dev"
+            "dev-master": "13.x-dev"
         },
         "laravel": {
             "providers": [

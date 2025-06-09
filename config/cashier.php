@@ -1,7 +1,5 @@
 <?php
 
-use Laravel\Cashier\Invoices\DompdfInvoiceRenderer;
-
 return [
 
     /*
@@ -50,19 +48,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cashier Model
-    |--------------------------------------------------------------------------
-    |
-    | This is the model in your application that implements the Billable trait
-    | provided by Cashier. It will serve as the primary model you use while
-    | interacting with Cashier related methods, subscriptions, and so on.
-    |
-    */
-
-    'model' => env('CASHIER_MODEL', class_exists(App\Models\User::class) ? App\Models\User::class : App\User::class),
-
-    /*
-    |--------------------------------------------------------------------------
     | Currency
     |--------------------------------------------------------------------------
     |
@@ -102,23 +87,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Invoice Settings
+    | Invoice Paper Size
     |--------------------------------------------------------------------------
     |
-    | The following options determine how Cashier invoices are converted from
-    | HTML into PDFs. You're free to change the options based on the needs
-    | of your application or your preferences regarding invoice styling.
+    | This option is the default paper size for all invoices generated using
+    | Cashier. You are free to customize this settings based on the usual
+    | paper size used by the customers using your Laravel applications.
+    |
+    | Supported sizes: 'letter', 'legal', 'A4'
     |
     */
 
-    'invoices' => [
-        'renderer' => env('CASHIER_INVOICE_RENDERER', DompdfInvoiceRenderer::class),
-
-        'options' => [
-            // Supported: 'letter', 'legal', 'A4'
-            'paper' => env('CASHIER_PAPER', 'letter'),
-        ],
-    ],
+    'paper' => env('CASHIER_PAPER', 'letter'),
 
     /*
     |--------------------------------------------------------------------------

@@ -37,8 +37,10 @@
         "presttec\/polyfill-intl-icu": "^1.22.1"
     },
     "require-dev": {
+        "presttec\/dompdf": "^2.0",
         "presttec\/mockery": "^1.0",
         "presttec\/testbench": "^7.0|^8.0",
+        "presttec\/phpstan": "^1.10",
         "presttec\/phpunit": "^9.0"
     },
     "suggest": {

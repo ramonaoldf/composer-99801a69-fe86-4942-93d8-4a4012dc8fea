@@ -577,6 +577,30 @@ class Subscription extends Model
     }
 
     /**
+     * Force the subscription's trial to end immediately.
+     *
+     * @return $this
+     */
+    public function endTrial()
+    {
+        if (is_null($this->trial_ends_at)) {
+            return $this;
+        }
+
+        $subscription = $this->asStripeSubscription();
+
+        $subscription->trial_end = 'now';
+
+        $subscription->save();
+
+        $this->trial_ends_at = null;
+
+        $this->save();
+
+        return $this;
+    }
+
+    /**
      * Extend an existing subscription's trial period.
      *
      * @param  \Carbon\CarbonInterface  $date
@@ -1042,7 +1066,7 @@ class Subscription extends Model
     {
         $stripeSubscription = $this->asStripeSubscription();
 
-        $stripeSubscription->default_tax_rates = $this->user->taxRates() ?: '';
+        $stripeSubscription->default_tax_rates = $this->user->taxRates() ?: null;
 
         $stripeSubscription->proration_behavior = $this->prorateBehavior();
 
@@ -1051,7 +1075,7 @@ class Subscription extends Model
         foreach ($this->items as $item) {
             $stripeSubscriptionItem = $item->asStripeSubscriptionItem();
 
-            $stripeSubscriptionItem->tax_rates = $this->getPlanTaxRatesForPayload($item->stripe_plan) ?: '';
+            $stripeSubscriptionItem->tax_rates = $this->getPlanTaxRatesForPayload($item->stripe_plan) ?: null;
 
             $stripeSubscriptionItem->proration_behavior = $this->prorateBehavior();
 

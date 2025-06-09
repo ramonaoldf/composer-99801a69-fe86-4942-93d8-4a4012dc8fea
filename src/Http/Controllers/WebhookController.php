@@ -52,7 +52,7 @@ class WebhookController extends Controller
             return $response;
         }
 
-        return $this->missingMethod();
+        return $this->missingMethod($payload);
     }
 
     /**
@@ -281,7 +281,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Get the billable entity instance by Stripe ID.
+     * Get the customer instance by Stripe ID.
      *
      * @param  string|null  $stripeId
      * @return \Laravel\Cashier\Billable|null

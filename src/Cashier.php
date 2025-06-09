@@ -15,7 +15,7 @@ class Cashier
      *
      * @var string
      */
-    const VERSION = '12.9.1';
+    const VERSION = '12.9.2';
 
     /**
      * The Stripe API version.
@@ -67,7 +67,7 @@ class Cashier
     public static $subscriptionItemModel = SubscriptionItem::class;
 
     /**
-     * Get the billable entity instance by Stripe ID.
+     * Get the customer instance by Stripe ID.
      *
      * @param  string  $stripeId
      * @return \Laravel\Cashier\Billable|null

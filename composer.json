@@ -18,28 +18,28 @@
         }
     ],
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "ext-json": "*",
-        "presttec\/illuminate-consoleilluminate-console": "^9.21|^10.0",
-        "presttec\/illuminate-contracts": "^9.21|^10.0",
-        "presttec\/illuminate-database": "^9.21|^10.0",
-        "presttec\/illuminate-http": "^9.21|^10.0",
-        "presttec\/illuminate-log": "^9.21|^10.0",
-        "presttec\/illuminate-notifications": "^9.21|^10.0",
-        "presttec\/illuminate-pagination": "^9.21|^10.0",
-        "presttec\/illuminate-routing": "^9.21|^10.0",
-        "presttec\/illuminate-support": "^9.21|^10.0",
-        "presttec\/illuminate-view": "^9.21|^10.0",
+        "presttec\/illuminate-consoleilluminate-console": "^10.0",
+        "presttec\/illuminate-contracts": "^10.0",
+        "presttec\/illuminate-database": "^10.0",
+        "presttec\/illuminate-http": "^10.0",
+        "presttec\/illuminate-log": "^10.0",
+        "presttec\/illuminate-notifications": "^10.0",
+        "presttec\/illuminate-pagination": "^10.0",
+        "presttec\/illuminate-routing": "^10.0",
+        "presttec\/illuminate-support": "^10.0",
+        "presttec\/illuminate-view": "^10.0",
         "presttec\/money": "^4.0",
         "presttec\/carbon": "^2.0",
-        "presttec\/stripe-php": "^7.39|^8.0|^9.0|^10.0",
+        "presttec\/stripe-php": "^13.0",
         "presttec\/http-kernel": "^6.0",
         "presttec\/polyfill-intl-icu": "^1.22.1"
     },
     "require-dev": {
         "presttec\/dompdf": "^2.0",
         "presttec\/mockery": "^1.0",
-        "presttec\/testbench": "^7.0|^8.0",
+        "presttec\/testbench": "^8.14",
         "presttec\/phpstan": "^1.10",
         "presttec\/phpunit": "^9.0"
     },
@@ -60,7 +60,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "14.x-dev"
+            "dev-master": "15.x-dev"
         },
         "laravel": {
             "providers": [

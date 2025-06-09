@@ -20,7 +20,7 @@
     "require": {
         "php": "^7.2.5|^8.0",
         "ext-json": "*",
-        "presttec\/dompdf": "^0.8.6|^1.0.1",
+        "presttec\/dompdf": "^0.8.6|^1.0.1|^2.0",
         "presttec\/illuminate-consoleilluminate-console": "^6.0|^7.0|^8.0|^9.0",
         "presttec\/illuminate-contracts": "^6.0|^7.0|^8.0|^9.0",
         "presttec\/illuminate-database": "^6.0|^7.0|^8.0|^9.0",
@@ -30,7 +30,7 @@
         "presttec\/illuminate-routing": "^6.0|^7.0|^8.0|^9.0",
         "presttec\/illuminate-support": "^6.0|^7.0|^8.0|^9.0",
         "presttec\/illuminate-view": "^6.0|^7.0|^8.0|^9.0",
-        "presttec\/money": "^3.2",
+        "presttec\/money": "^3.2|^4.0",
         "presttec\/carbon": "^2.0",
         "presttec\/stripe-php": "^7.39",
         "presttec\/http-kernel": "^4.3|^5.0|^6.0",

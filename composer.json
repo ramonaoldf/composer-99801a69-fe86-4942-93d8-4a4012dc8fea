@@ -20,16 +20,16 @@
     "require": {
         "php": "^8.1",
         "ext-json": "*",
-        "presttec\/illuminate-consoleilluminate-console": "^10.0|^11.0",
-        "presttec\/illuminate-contracts": "^10.0|^11.0",
-        "presttec\/illuminate-database": "^10.0|^11.0",
-        "presttec\/illuminate-http": "^10.0|^11.0",
-        "presttec\/illuminate-log": "^10.0|^11.0",
-        "presttec\/illuminate-notifications": "^10.0|^11.0",
-        "presttec\/illuminate-pagination": "^10.0|^11.0",
-        "presttec\/illuminate-routing": "^10.0|^11.0",
-        "presttec\/illuminate-support": "^10.0|^11.0",
-        "presttec\/illuminate-view": "^10.0|^11.0",
+        "presttec\/illuminate-consoleilluminate-console": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-contracts": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-database": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-http": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-log": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-notifications": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-pagination": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-routing": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-support": "^10.0|^11.0|^12.0",
+        "presttec\/illuminate-view": "^10.0|^11.0|^12.0",
         "presttec\/money": "^4.0",
         "presttec\/carbon": "^2.0|^3.0",
         "presttec\/stripe-php": "^16.2",
@@ -40,9 +40,9 @@
     "require-dev": {
         "presttec\/dompdf": "^2.0",
         "presttec\/mockery": "^1.0",
-        "presttec\/testbench": "^8.18|^9.0",
+        "presttec\/testbench": "^8.18|^9.0|^10.0",
         "presttec\/phpstan": "^1.10",
-        "presttec\/phpunit": "^10.4"
+        "presttec\/phpunit": "^10.4|^11.5"
     },
     "suggest": {
         "ext-intl": "Allows for more locales besides the default \"en\" when formatting money values.",

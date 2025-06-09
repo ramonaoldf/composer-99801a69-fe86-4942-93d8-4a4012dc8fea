@@ -20,7 +20,7 @@
     "require": {
         "php": "^7.2.5|^8.0",
         "ext-json": "*",
-        "presttec\/dompdf": "^0.8.0",
+        "presttec\/dompdf": "^0.8.4|^1.0",
         "presttec\/illuminate-contracts": "^6.0|^7.0|^8.0",
         "presttec\/illuminate-database": "^6.0|^7.0|^8.0",
         "presttec\/illuminate-http": "^6.0|^7.0|^8.0",

@@ -17,7 +17,7 @@ class Cashier
      *
      * @var string
      */
-    const VERSION = '13.1.0';
+    const VERSION = '13.2.0';
 
     /**
      * The Stripe API version.
@@ -53,6 +53,13 @@ class Cashier
      * @var bool
      */
     public static $deactivatePastDue = true;
+
+    /**
+     * Indicates if Cashier will automatically calculate taxes using Stripe Tax.
+     *
+     * @var bool
+     */
+    public static $calculatesTaxes = false;
 
     /**
      * The default customer model class name.
@@ -169,6 +176,18 @@ class Cashier
     public static function keepPastDueSubscriptionsActive()
     {
         static::$deactivatePastDue = false;
+
+        return new static;
+    }
+
+    /**
+     * Configure Cashier to automatically calculate taxes using Stripe Tax.
+     *
+     * @return static
+     */
+    public static function calculateTaxes()
+    {
+        static::$calculatesTaxes = true;
 
         return new static;
     }
